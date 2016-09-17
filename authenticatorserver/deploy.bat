@@ -1,0 +1,1 @@
+copy target\authenticatorserver.war C:\Soft\ApacheFoundation\apache-tomcat-8.0.35\webapps
