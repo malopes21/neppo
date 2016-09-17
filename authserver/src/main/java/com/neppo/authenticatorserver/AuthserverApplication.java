@@ -40,5 +40,6 @@ public class AuthserverApplication {
 		
 	    //spring boot default
 		SpringApplication.run(AuthserverApplication.class, args);
+		
 	}
 }
