@@ -2,7 +2,9 @@
     <wb-module deploy-name="exampleidp-webapplication">
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
-        <property name="context-root" value="exampleidp-webapplication"/>
+        <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
+        <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
         <property name="java-output-path" value="/exampleidp-webapplication/target/classes"/>
+        <property name="context-root" value="exampleidp"/>
     </wb-module>
 </project-modules>

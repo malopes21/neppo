@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css">
+</head>
+
+<body ng-app="BlankApp" ng-cloak>
+  <div layout="column" flex id="content" role="main">
+    <md-content flex id="content">
+			<div class="header" layout="column" layout-align="center center" style="margin: 8px;text-align: center;">
+				<h1 style="font-family: 'Open Sans', arial;-webkit-font-smoothing: antialiased;color: #555;font-size: 42px;font-weight: 300;">IDENTITYful</h1>
+				<h4 style="font-family: 'Open Sans', arial;-webkit-font-smoothing: antialiased;color: #555;font-size: 18px;font-weight: 400;">
+					Sign in with your IDENTITYful Account.
+				</h4>
+			</div>
+			<div layout="column" layout-align="center center">
+        <md-card layout="column" style="width: 405px;">
+          <md-card-content>
+          <form method="post" action="./login">
+            <md-input-container style="width: 100%;margin-bottom: 0;">
+              <label>Email</label>
+              <input ng-model="user.email" name="user.email" value="malopes" >
+            </md-input-container>
+            <md-input-container style="width: 100%;margin-top: 0;margin-bottom: 0;">
+              <label>Password</label>
+              <input ng-model="user.password" name="user.password" type="password" value="123">
+            </md-input-container>
+            <md-input-container style="width: 100%;">
+              <md-button type="submit" class="md-raised md-primary" style="width: 100%;margin: 0;">Sign in</md-button>
+            </md-input-container>
+           </form>
+          </md-card-content>
+        </md-card>
+      </div>
+  </div>
+  </md-content>
+  </div>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js"></script>
+  <!-- Angular Material Library -->
+  <script src="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
+  <!-- Your application bootstrap  -->
+  <script type="text/javascript">
+    /**
+     * You must include the dependency on 'ngMaterial'
+     */
+    angular.module('BlankApp', ['ngMaterial']);
+  </script>
+</body>
+
+</html>
