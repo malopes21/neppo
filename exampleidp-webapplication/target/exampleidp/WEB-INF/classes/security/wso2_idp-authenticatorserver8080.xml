@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<EntityDescriptor entityID="Coreo"
+	xmlns="urn:oasis:names:tc:SAML:2.0:metadata">
+	<IDPSSODescriptor WantAuthnRequestsSigned="true"
+		protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+		<!-- <KeyDescriptor use="signing"> <ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#"> 
+			<ds:X509Data> <ds:X509Certificate> MIICQjCCAasCBElBAsYwDQYJKoZIhvcNAQEEBQAwZzELMAkGA1UEBhMCTEsxDTAL 
+			BgNVBAoTBFdTTzIxEzARBgNVBAgTCldhc2hpbmd0b24xEDAOBgNVBAcTB1NlYXR0 bGUxDTALBgNVBAsTBE5vbmUxEzARBgNVBAMTCndzbzJjYXJib24wIBcNMDgxMjEx 
+			MTIwODM4WhgPMjI4MjA5MjUxMjA4MzhaMGcxCzAJBgNVBAYTAkxLMQ0wCwYDVQQK EwRXU08yMRMwEQYDVQQIEwpXYXNoaW5ndG9uMRAwDgYDVQQHEwdTZWF0dGxlMQ0w 
+			CwYDVQQLEwROb25lMRMwEQYDVQQDEwp3c28yY2FyYm9uMIGfMA0GCSqGSIb3DQEB AQUAA4GNADCBiQKBgQCnDt65/AhKuuJ+9Zy7cRJt64C2eqAN5tSSf1Idh2Jz0pRI 
+			Wpkd3V2gfpWg9fhY5uNFC3+aIMrUZVEzMqGDBv1Zym4jXMv4tsf4IGvVMuHgV4PS DoN3QD0qAxRCEZNMCMJaOoVtq0SyTvJ2mvOHoZge2XWJtNDV2OuYvRb40YvrNwID 
+			AQABMA0GCSqGSIb3DQEBBAUAA4GBAAiruslhFOMzFYgiVzxrgQZo405C2EHTozCA CgtJ9ElMuyiWnai/sRViVAY3dkV7gilOYl8zXBSVlpagtB/NiibY+zPv6lXKWSBu 
+			oFwCsKeEDjriwEvLT9Gxi2gEHth4lm6E/FE14JDjSk9Urn7+HTpPQHDkHSo05Y0R 3irtIjyx 
+			</ds:X509Certificate> </ds:X509Data> </ds:KeyInfo> </KeyDescriptor> -->
+		<ArtifactResolutionService index="0" isDefault="true" Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"
+					Location="http://localhost:8080/authenticatorserver/sso" />
+		<SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+					Location="http://localhost:8080/authenticatorserver/sso" ResponseLocation="http://localhost:8080/authenticatorserver/sso" />
+		<SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+					Location="http://localhost:8080/authenticatorserver/sso" ResponseLocation="http://localhost:8080/authenticatorserver/sso" />
+		<SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"
+					Location="http://localhost:8080/opensso/IDPSloSoap/metaAlias/idp" />
+		<ManageNameIDService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+					Location="http://localhost:8080/authenticatorserver/sso" ResponseLocation="http://localhost:8080/authenticatorserver/sso" />
+		<ManageNameIDService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+					Location="http://localhost:8080/authenticatorserver/sso" ResponseLocation="http://localhost:8080/authenticatorserver/sso" />
+		<ManageNameIDService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"
+					Location="http://localhost:8080/authenticatorserver/sso" />
+		<NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</NameIDFormat>
+		<NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
+		<NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</NameIDFormat>
+		<NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</NameIDFormat>
+		<SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="http://localhost:8080/authenticatorserver/sso" />
+		<SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="http://localhost:8080/authenticatorserver/sso" />
+		<NameIDMappingService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="http://localhost:8080/authenticatorserver/sso" />
+		<AssertionIDRequestService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="http://localhost:8080/authenticatorserver/sso" />
+		<AssertionIDRequestService Binding="urn:oasis:names:tc:SAML:2.0:bindings:URI" Location="http://localhost:8080/authenticatorserver/sso" />
+	</IDPSSODescriptor>
+</EntityDescriptor>
