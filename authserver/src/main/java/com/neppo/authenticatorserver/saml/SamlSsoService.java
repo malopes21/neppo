@@ -7,8 +7,6 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.zip.DataFormatException;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,21 +17,22 @@ import org.apache.log4j.Logger;
 //import org.apache.shiro.cache.Cache;
 import org.joda.time.DateTime;
 import org.opensaml.common.SAMLVersion;
+import org.opensaml.saml2.core.AttributeStatement;
 import org.opensaml.saml2.core.Assertion;
 import org.opensaml.saml2.core.AuthnContext;
 import org.opensaml.saml2.core.AuthnRequest;
-import org.opensaml.saml2.core.Issuer;
 import org.opensaml.saml2.core.Response;
 import org.opensaml.saml2.core.StatusCode;
 import org.opensaml.xml.io.MarshallingException;
 import org.opensaml.xml.util.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.w3c.dom.Document;
 
 import com.neppo.authenticatorserver.model.SamlSsoConfig;
 import com.neppo.authenticatorserver.model.Subject;
+import com.neppo.authenticatorserver.model.User;
 import com.neppo.authenticatorserver.model.dao.SamlSsoConfigDAO;
 import com.neppo.authenticatorserver.model.exception.UserDaoException;
 import com.neppo.authenticatorserver.saml.util.SAMLSignature;
@@ -43,15 +42,11 @@ import com.neppo.authenticatorserver.service.IdentityService;
 import com.neppo.authenticatorserver.session.LoginSession;
 import com.neppo.authenticatorserver.session.LoginSessionManager;
 
-/**
- * @author bhlangonijr
- *
- */
-@WebServlet("/sso")
-public class SamlSsoServlet extends HttpServlet {
+@Controller
+public class SamlSsoService extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	private static final Logger log = Logger.getLogger(SamlSsoServlet.class);
+	private static final Logger log = Logger.getLogger(SamlSsoService.class);
 
 	@Autowired
 	protected IdentityService identityService;
@@ -60,6 +55,7 @@ public class SamlSsoServlet extends HttpServlet {
 	private SamlSsoConfigDAO samlConfigDAO;
 	
 	//protected Cache<String, String> cache;
+	@Autowired
 	protected LoginSessionManager sessionManager;
 
 	public static final String loginUsername = "user.email";
@@ -74,12 +70,10 @@ public class SamlSsoServlet extends HttpServlet {
 	private String errorMessage = null;
 	
 
-	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	@RequestMapping(value="/sso")
+    public void signOn(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
-		samlReq=null;
-		samlRelayState = null;
-		errorMessage = null;
+		samlReq=null;	samlRelayState = null;	errorMessage = null;
 
 		samlReq = getSamlRequest(req);
 		AuthnRequest authnRequest = getAuthnRequestInSession(samlReq);
@@ -115,15 +109,14 @@ public class SamlSsoServlet extends HttpServlet {
 			resp.sendRedirect("./" + redirect);
 
 			if (log.isDebugEnabled()) {
-				log.debug("User session not found["+authnRequest.getID()+
-						"]. Sending user to login page: "+redirect);
+				log.debug("User session not found[" + authnRequest.getID() + "]. Sending user to login page: " + redirect);
 			}
 			return;
 		}
 		
 
 		if (log.isDebugEnabled()) {
-			log.debug("User session found["+authnRequest.getID());
+			log.debug("User session found[" + authnRequest.getID());
 		}
 
 		try {
@@ -144,7 +137,7 @@ public class SamlSsoServlet extends HttpServlet {
 			doSsoResponse(req, resp, samlRelayState, authnRequest, errorMessage);
 			req.getSession().removeAttribute(SamlUtils.REQUEST);
 			req.getSession().removeAttribute(SamlUtils.RELAY_STATE);
-			getIdentityService().setSubject(new Subject());  //malopes
+			getIdentityService().setSubject(new Subject());  				//TODO: fix it!
 			
 		} catch (Exception e) {
 			sendToErrorPage(resp, "Error creating SSO response", e);
@@ -196,41 +189,7 @@ public class SamlSsoServlet extends HttpServlet {
 		return localSamlReq;
 	}
 
-	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
-		
-		doGet(req, resp);
-		
-/*		String username = req.getParameter(loginUsername);
-		String password = req.getParameter(loginPassword);
-		
-		User user = getIdentityService().getUser(username);
-		
-		if(user != null && password.equals(user.getPassword()) ) {
-			
-			Subject subject = new Subject();
-			subject.setPrincipal(username);
-			subject.setSession(new HttpServletSession(req.getSession(), req.getRemoteHost()));
-			subject.setAuthenticated(true);
-			
-			getIdentityService().setSubject(subject);
-			
-			doGet(req, resp);  
-		
-		} else {
 
-			//req.getSession().setAttribute(SamlUtils.REQUEST, samlReq);
-			//req.getSession().setAttribute(SamlUtils.RELAY_STATE, samlRelayState);
-
-			String redirect = loginRedirectUrl;
-			resp.sendRedirect(redirect);
-
-		}
-		*/
-	}
-
-	// executes the sso response after user successfuly login
 	protected void doSsoResponse(HttpServletRequest req, HttpServletResponse resp, 
 			String relayState, AuthnRequest authnRequest, String errorMessage)
 					throws Exception {
@@ -270,19 +229,11 @@ public class SamlSsoServlet extends HttpServlet {
 				replace("${encodedResponse}", encodedResponse).
 				replace("${relayState}", ""));
 		
-		/*System.out.println(SamlUtils.RESPONSE_FORM.replace("${assertion.url}", url).
-				replace("${encodedResponse}", encodedResponse).
-				replace("${relayState}", ""));*/
-		/*out.print(SamlUtils.RESPONSE_FORM.replace("${assertion.url}", url).
-				replace("${encodedResponse}", encodedResponse).
-				replace("${relayState}", relayState));*/
 		out.close();
 
 	}
 
-	/*
-	 * Creates the response for the authentication request
-	 */
+
 	protected Response createAuthnResponse(AuthnRequest authnRequest) 
 			throws IOException, MarshallingException, TransformerException, UserDaoException {
 
@@ -304,7 +255,7 @@ public class SamlSsoServlet extends HttpServlet {
 				AuthnContext.PASSWORD_AUTHN_CTX,  authnRequest.getDestination(),  
 				sessionIndex);  			
 		
-/*		AttributeStatement statement = SamlUtils.create (AttributeStatement.class, 
+		AttributeStatement statement = SamlUtils.create (AttributeStatement.class, 
 				AttributeStatement.DEFAULT_ELEMENT_NAME);
 
 		User user = getIdentityService().getUser(username);
@@ -323,7 +274,7 @@ public class SamlSsoServlet extends HttpServlet {
 		SamlUtils.addAttribute(statement, "urn:oid:1.3.6.1.4.1.5923.1.1.1.6", username);
 		SamlUtils.addAttribute(statement, "urn:oid:1.3.6.1.4.1.5923.1.1.1.10", " ");
 
-		authnAssertion.getStatements().add(statement);*/
+		authnAssertion.getStatements().add(statement);
 
 		response.getAssertions().add(authnAssertion);	
 
@@ -331,9 +282,7 @@ public class SamlSsoServlet extends HttpServlet {
 
 	}
 
-	/*
-	 * Creates the response for the authentication request
-	 */
+
 	protected Response createAuthnErrorResponse(AuthnRequest authnRequest, String errorMesssage,
 			boolean authError) 
 					throws IOException, MarshallingException, TransformerException, UserDaoException {
@@ -352,9 +301,7 @@ public class SamlSsoServlet extends HttpServlet {
 
 	}
 
-	/*
-	 * gets the authnrequest stored in the web session
-	 */	
+
 	private AuthnRequest getAuthnRequestInSession(String samlReq) {
 
 		AuthnRequest authnRequest = null;
@@ -402,45 +349,26 @@ public class SamlSsoServlet extends HttpServlet {
 		}
 		return cache;
 	}*/
-
-	/**
-	 * @return the identityService
-	 */
+	
+	
 	public IdentityService getIdentityService() {
-		if (identityService==null) {
-			ApplicationContext context = WebApplicationContextUtils.
-					getRequiredWebApplicationContext(getServletContext()); 
-			identityService = (IdentityService) context.getBean("identityService");
-		}		
 
 		return identityService;
 	}
 	
 	public SamlSsoConfigDAO getSamlSsoConfigDAO() {
-		if (samlConfigDAO==null) {
-			ApplicationContext context = WebApplicationContextUtils.
-					getRequiredWebApplicationContext(getServletContext()); 
-			samlConfigDAO = (SamlSsoConfigDAO) context.getBean("samlConfigDAO");
-		}		
 
 		return samlConfigDAO;
 	}
 
 	public LoginSessionManager getLoginSessionManager() {
-		if (sessionManager==null) {
-			ApplicationContext context = WebApplicationContextUtils.
-					getRequiredWebApplicationContext(getServletContext()); 
-			sessionManager = (LoginSessionManager) context.getBean("loginSessionManager");
-		}		
 
 		return sessionManager;
 	}
 
 
-	/**
-	 * @param identityService the identityService to set
-	 */
 	public void setIdentityService(IdentityService identityService) {
+		
 		this.identityService = identityService;
 	}
 

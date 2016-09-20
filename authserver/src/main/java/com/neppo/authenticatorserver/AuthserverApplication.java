@@ -11,7 +11,7 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 //import org.apache.shiro.mgt.SecurityManager;
 
-import com.neppo.authenticatorserver.saml.SamlSsoServlet;
+import com.neppo.authenticatorserver.saml.SamlSsoService;
 import com.neppo.authenticatorserver.service.IdentityService;
 import com.neppo.authenticatorserver.service.LoginService;
 
@@ -26,10 +26,10 @@ import com.neppo.authenticatorserver.service.LoginService;
 	    return new IdentityService();
 	}
 	
-	@Bean
+/*	@Bean
 	public ServletRegistrationBean servletSSORegistrationBean(){
 	    return new ServletRegistrationBean(new SamlSsoServlet(),"/sso/*");
-	}
+	}*/
 	
 /*	@Bean
 	public ServletRegistrationBean servletLoginRegistrationBean(){

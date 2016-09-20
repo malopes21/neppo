@@ -40,16 +40,6 @@ public class IdentityService {
 			user.setPassword("123");
 			return user;
 		}
-		
-/*		if(username != null && username.equals("malopes")) {
-			user.setUsername(username); 
-			user.setEmail("malopes21@gmail");
-			user.setFirstName("Marcos");
-			user.setName("MarcosLopes");
-			user.setSureName("Lopes");
-			user.setPassword("123");
-			return user;
-		}*/
 
 		return null;
 	}

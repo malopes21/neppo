@@ -11,7 +11,7 @@ public class ErrorController {
     @RequestMapping("/ops")
     public String errorPage(@RequestParam(value="erro", required=false, defaultValue="") String erro, Model model) {
         model.addAttribute("erro", erro);
-        System.out.println("\nOOOOOPPPPSSS!\n");
+        //System.out.println("\nOOOOOPPPPSSS!\n");
         return "authn_error";
     }
 

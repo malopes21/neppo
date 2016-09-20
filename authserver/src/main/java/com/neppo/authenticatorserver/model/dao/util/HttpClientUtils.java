@@ -44,26 +44,6 @@ public class HttpClientUtils {
 		return responseString;
 	}
 	
-	public static void main(String[] args) {
-		
-		try {
-			List<NameValuePair> headers = new ArrayList<>();
-			
-			String username = "administrador";
-			headers.add(new NameValuePair("Host", "localhost:8080"));
-			headers.add(new NameValuePair("Content-Type", "application/json"));
-			headers.add(new NameValuePair("Accept", "application/json"));
-			String response = HttpClientUtils.sendGet("http://localhost:8080/provisionmanager/api/authentications/"+username+"?expand=true", headers);
-			
-			ObjectMapper mapper = new ObjectMapper();
-			Account obj = mapper.readValue(response, Account.class);
-			System.out.println(obj);
-			
-		}catch(Exception ex){
-			ex.printStackTrace();
-		}
-	
-	}
 	
 	private static String processResponse(HttpResponse response) throws UnsupportedOperationException, IOException {
 
@@ -78,6 +58,10 @@ public class HttpClientUtils {
 	}
 
 
+	/**
+	 * 	Not used
+	 */
+	
 	public static String sendPost(String url, List<NameValuePair> postParams) throws Exception {
 
 		CloseableHttpClient client = HttpClients.createDefault();
@@ -131,4 +115,26 @@ public class HttpClientUtils {
 		
 		return result.toString();
 	}
+	
+	
+/*	public static void main(String[] args) {
+		
+		try {
+			List<NameValuePair> headers = new ArrayList<>();
+			
+			String username = "administrador";
+			headers.add(new NameValuePair("Host", "localhost:8080"));
+			headers.add(new NameValuePair("Content-Type", "application/json"));
+			headers.add(new NameValuePair("Accept", "application/json"));
+			String response = HttpClientUtils.sendGet("http://localhost:8080/provisionmanager/api/authentications/"+username+"?expand=true", headers);
+			
+			ObjectMapper mapper = new ObjectMapper();
+			Account obj = mapper.readValue(response, Account.class);
+			System.out.println(obj);
+			
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+	
+	}*/
 }

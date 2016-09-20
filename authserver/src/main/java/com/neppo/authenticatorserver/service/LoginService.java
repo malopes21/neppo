@@ -33,7 +33,6 @@ public class LoginService {
 	public static final String loginUsername = "user.email";
 	public static final String loginPassword = "user.password";
 	
-	protected static final String loginRedirectUrl = "./login.html";
 	protected SAMLSignature signature;
 
 
@@ -82,11 +81,6 @@ public class LoginService {
 	
 
 	public IdentityService getIdentityService() {
-		/*if (identityService==null) {
-			ApplicationContext context = WebApplicationContextUtils.
-					getRequiredWebApplicationContext(getServletContext()); 
-			identityService = (IdentityService) context.getBean("identityService");
-		}	*/	
 
 		return identityService;
 	}

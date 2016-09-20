@@ -27,8 +27,7 @@ import com.neppo.authenticatorserver.saml.util.ConfigContext;
 public class LoginSessionManager {
 
 	private static final Logger log = Logger.getLogger(LoginSessionManager.class);
-	private final ConcurrentHashMap<String, List<LoginSession>> map = 
-			new ConcurrentHashMap<String, List<LoginSession>>();
+	private final ConcurrentHashMap<String, List<LoginSession>> map = new ConcurrentHashMap<String, List<LoginSession>>();
 	protected SAMLSignature signature;
 	private final ExecutorService service = Executors.newCachedThreadPool();
 
