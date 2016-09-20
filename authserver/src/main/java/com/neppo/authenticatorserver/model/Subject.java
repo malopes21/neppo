@@ -1,11 +1,14 @@
 package com.neppo.authenticatorserver.model;
 
-import org.apache.shiro.web.session.HttpServletSession;
+import javax.servlet.http.HttpSession;
+
+//import org.apache.shiro.web.session.HttpServletSession;
 
 public class Subject {
 
 	private boolean authenticated = false;
-	private HttpServletSession session;
+	//private HttpServletSession session;
+	private HttpSession session;
 	private String principal;
 
 	public boolean isAuthenticated() {
@@ -16,11 +19,11 @@ public class Subject {
 		this.authenticated = authenticated;
 	}
 
-	public HttpServletSession getSession() {
+	public HttpSession getSession() {
 		return session;
 	}
 
-	public void setSession(HttpServletSession session) {
+	public void setSession(HttpSession session) {
 		this.session = session;
 	}
 

@@ -1,6 +1,6 @@
 package com.neppo.authenticatorserver.service;
 
-import org.apache.shiro.cache.CacheManager;
+//import org.apache.shiro.cache.CacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -62,8 +62,8 @@ public class IdentityService {
 		this.user = user;
 	}
 
-	public CacheManager getCacheManager() {
+/*	public CacheManager getCacheManager() {
 		return null;
-	}
+	}*/
 
 }

@@ -16,7 +16,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
-import org.apache.shiro.cache.Cache;
+//import org.apache.shiro.cache.Cache;
 import org.joda.time.DateTime;
 import org.opensaml.common.SAMLVersion;
 import org.opensaml.saml2.core.Assertion;
@@ -59,103 +59,68 @@ public class SamlSsoServlet extends HttpServlet {
 	@Autowired
 	private SamlSsoConfigDAO samlConfigDAO;
 	
-	protected Cache<String, String> cache;
+	//protected Cache<String, String> cache;
 	protected LoginSessionManager sessionManager;
 
 	public static final String loginUsername = "user.email";
 	public static final String loginPassword = "user.password";
 	
-	protected static final String loginRedirectUrl = "./login.html";
-	private  static final String errorRedirectUrl = "./error.html";
+	protected static final String loginRedirectUrl = "./login-form";
+	private  static final String errorRedirectUrl = "./ops";
 	protected SAMLSignature signature;
 	
-
+	private String samlReq=null;
+	private String samlRelayState = null;
+	private String errorMessage = null;
+	
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-		if (log.isDebugEnabled()) {
-			log.debug("SAMLRequest: "+req.getParameter(SamlUtils.REQUEST));
-			log.debug("RelayState:  "+req.getParameter(SamlUtils.RELAY_STATE));
-		}
+		samlReq=null;
+		samlRelayState = null;
+		errorMessage = null;
 
-		String samlReq=null;
-		String samlRelayState = null;
-		String errorMessage = null;
-
-		try {
-			String samlReq64 = req.getParameter(SamlUtils.REQUEST);
-			if (samlReq64!=null) {
-				samlReq = SamlUtils.decodeMessage(samlReq64);
-			}
-		} catch (DataFormatException e) {
-			errorMessage = "Coudn't decode SAML Request message: "+e.getMessage();
-			log.error(errorMessage);
-		}
-
-		if (Util.isEmpty(samlReq)) {
-			samlReq = (String) req.getSession().getAttribute(SamlUtils.REQUEST);
-			if (Util.isEmpty(samlReq)) {
-				errorMessage = "Invalid SAML Request Parameters";
-			}
-		}
-
-		samlRelayState = req.getParameter(SamlUtils.RELAY_STATE);
-
-		if (Util.isEmpty(samlRelayState)) {
-			samlRelayState = (String) req.getSession().getAttribute(SamlUtils.RELAY_STATE);
-		}
-
-		if (log.isDebugEnabled()) {
-			log.debug("SAMLRequest-decoded: "+samlReq);
-		}
-
-		AuthnRequest authnRequest = getAuthnRequest(samlReq);
-		
+		samlReq = getSamlRequest(req);
+		AuthnRequest authnRequest = getAuthnRequestInSession(samlReq);
 
 		if (authnRequest == null) {
 			
 			errorMessage = "Invalid SAML Request Parameters";
+			String redirect = errorRedirectUrl + "?erro="+errorMessage;
+			resp.sendRedirect("./" + redirect);
+			return;
+		} 
+			
+		SamlSsoConfig samlConfig = getSamlSsoConfig(authnRequest);
+		
+		if(samlConfig == null) {
+			
+			errorMessage = "SamlConfig not found.";
+			String redirect = errorRedirectUrl + "?erro="+errorMessage;
+			resp.sendRedirect("./" + redirect);
+			return;
+			
 		} else {
 			
-			SamlSsoConfig samlConfig = null;
-			try {
-				samlConfig = getSamlSsoConfigDAO().findByIssuer(authnRequest.getIssuer().getValue());
-			}catch(Exception ex) {
-				ex.printStackTrace();
-			}
-			
-			if(samlConfig == null) {
-				
-				String redirect = errorRedirectUrl;
-				resp.sendRedirect("./" + redirect);
-
-				if (log.isDebugEnabled()) {
-					log.debug("Issuer not found["+authnRequest.getIssuer().getValue()+"]. Sending user to error page: "+redirect);
-				}
-				return;
-			} else {
-				
-				req.getSession().setAttribute(SamlUtils.SAMLSSOCONFIG, samlConfig);
-			}
-			
-			if (!getIdentityService().getSubject().isAuthenticated()) {
-
-				req.getSession().setAttribute(SamlUtils.REQUEST, samlReq);
-				req.getSession().setAttribute(SamlUtils.RELAY_STATE, samlRelayState);
-
-				String redirect = loginRedirectUrl;
-				resp.sendRedirect("./" + redirect);
-
-				if (log.isDebugEnabled()) {
-					log.debug("User session not found["+authnRequest.getID()+
-							"]. Sending user to login page: "+redirect);
-				}
-				return;
-			}
-			
+			req.getSession().setAttribute(SamlUtils.SAMLSSOCONFIG, samlConfig);
 		}
+		
+		if (!getIdentityService().getSubject().isAuthenticated()) {
+
+			req.getSession().setAttribute(SamlUtils.REQUEST, samlReq);
+			req.getSession().setAttribute(SamlUtils.RELAY_STATE, samlRelayState);
+
+			String redirect = loginRedirectUrl;
+			resp.sendRedirect("./" + redirect);
+
+			if (log.isDebugEnabled()) {
+				log.debug("User session not found["+authnRequest.getID()+
+						"]. Sending user to login page: "+redirect);
+			}
+			return;
+		}
+		
 
 		if (log.isDebugEnabled()) {
 			log.debug("User session found["+authnRequest.getID());
@@ -185,6 +150,50 @@ public class SamlSsoServlet extends HttpServlet {
 			sendToErrorPage(resp, "Error creating SSO response", e);
 		} 
 
+	}
+
+	private SamlSsoConfig getSamlSsoConfig(AuthnRequest authnRequest) {
+		SamlSsoConfig samlConfig = null;
+		try {
+			
+			samlConfig = getSamlSsoConfigDAO().findByIssuer(authnRequest.getIssuer().getValue());
+		}catch(Exception ex) {
+			ex.printStackTrace();
+		}
+		return samlConfig;
+	}
+
+	private String getSamlRequest(HttpServletRequest req) {
+		
+		String localSamlReq = null;
+		try {
+			String samlReq64 = req.getParameter(SamlUtils.REQUEST);
+			if (samlReq64!=null) {
+				localSamlReq = SamlUtils.decodeMessage(samlReq64);
+			}
+		} catch (DataFormatException e) {
+			errorMessage = "Coudn't decode SAML Request message: "+e.getMessage();
+			log.error(errorMessage);
+		}
+
+		if (Util.isEmpty(localSamlReq)) {
+			localSamlReq = (String) req.getSession().getAttribute(SamlUtils.REQUEST);
+			if (Util.isEmpty(localSamlReq)) {
+				errorMessage = "Invalid SAML Request Parameters";
+			}
+		}
+
+		samlRelayState = req.getParameter(SamlUtils.RELAY_STATE);
+
+		if (Util.isEmpty(samlRelayState)) {
+			samlRelayState = (String) req.getSession().getAttribute(SamlUtils.RELAY_STATE);
+		}
+
+		if (log.isDebugEnabled()) {
+			log.debug("SAMLRequest-decoded: "+localSamlReq);
+		}
+		
+		return localSamlReq;
 	}
 
 	@Override
@@ -346,7 +355,7 @@ public class SamlSsoServlet extends HttpServlet {
 	/*
 	 * gets the authnrequest stored in the web session
 	 */	
-	private AuthnRequest getAuthnRequest(String samlReq) {
+	private AuthnRequest getAuthnRequestInSession(String samlReq) {
 
 		AuthnRequest authnRequest = null;
 
@@ -387,12 +396,12 @@ public class SamlSsoServlet extends HttpServlet {
 		return signature;
 	}
 
-	protected Cache<String,String> getCache() {
+/*	protected Cache<String,String> getCache() {
 		if (cache == null) {
 			cache = getIdentityService().getCacheManager().getCache("identity-server-saml");
 		}
 		return cache;
-	}
+	}*/
 
 	/**
 	 * @return the identityService
