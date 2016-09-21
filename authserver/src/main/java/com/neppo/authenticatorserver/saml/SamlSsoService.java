@@ -30,11 +30,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.w3c.dom.Document;
 
+import com.neppo.authenticatorserver.model.Account;
 import com.neppo.authenticatorserver.model.SamlSsoConfig;
 import com.neppo.authenticatorserver.model.Subject;
 import com.neppo.authenticatorserver.model.User;
 import com.neppo.authenticatorserver.model.dao.SamlSsoConfigDAO;
-import com.neppo.authenticatorserver.model.exception.UserDaoException;
+import com.neppo.authenticatorserver.model.exception.DaoException;
 import com.neppo.authenticatorserver.saml.util.SAMLSignature;
 import com.neppo.authenticatorserver.saml.util.SamlUtils;
 import com.neppo.authenticatorserver.saml.util.Util;
@@ -65,7 +66,7 @@ public class SamlSsoService extends HttpServlet {
 	private  static final String errorRedirectUrl = "./ops";
 	protected SAMLSignature signature;
 	
-	private String samlReq=null;
+	private String samlReq = null;
 	private String samlRelayState = null;
 	private String errorMessage = null;
 	
@@ -235,7 +236,7 @@ public class SamlSsoService extends HttpServlet {
 
 
 	protected Response createAuthnResponse(AuthnRequest authnRequest) 
-			throws IOException, MarshallingException, TransformerException, UserDaoException {
+			throws IOException, MarshallingException, TransformerException, DaoException {
 
 		String username = (String)getIdentityService().
 				getSubject().getPrincipal();
@@ -255,10 +256,11 @@ public class SamlSsoService extends HttpServlet {
 				AuthnContext.PASSWORD_AUTHN_CTX,  authnRequest.getDestination(),  
 				sessionIndex);  			
 		
-		AttributeStatement statement = SamlUtils.create (AttributeStatement.class, 
+		/*		AttributeStatement statement = SamlUtils.create (AttributeStatement.class, 
 				AttributeStatement.DEFAULT_ELEMENT_NAME);
 
-		User user = getIdentityService().getUser(username);
+		
+		User user = getIdentityService().getAccount(username);
 
 		SamlUtils.addAttribute(statement, "uid", username);
 		SamlUtils.addAttribute(statement, "givenName", user.getFirstName());
@@ -274,7 +276,7 @@ public class SamlSsoService extends HttpServlet {
 		SamlUtils.addAttribute(statement, "urn:oid:1.3.6.1.4.1.5923.1.1.1.6", username);
 		SamlUtils.addAttribute(statement, "urn:oid:1.3.6.1.4.1.5923.1.1.1.10", " ");
 
-		authnAssertion.getStatements().add(statement);
+		authnAssertion.getStatements().add(statement); */
 
 		response.getAssertions().add(authnAssertion);	
 
@@ -285,7 +287,7 @@ public class SamlSsoService extends HttpServlet {
 
 	protected Response createAuthnErrorResponse(AuthnRequest authnRequest, String errorMesssage,
 			boolean authError) 
-					throws IOException, MarshallingException, TransformerException, UserDaoException {
+					throws IOException, MarshallingException, TransformerException, DaoException {
 
 		String statusCode = authError ? StatusCode.AUTHN_FAILED_URI:StatusCode.RESPONDER_URI;
 

@@ -85,6 +85,7 @@ public class LoginSessionManager {
 		}
 		getSessions(username).clear();
 	}
+	
 	protected SAMLSignature getSignature() {
 		if (signature == null) {
 			signature = new SAMLSignature();

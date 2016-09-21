@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.neppo.authenticatorserver.model.Account;
+import com.neppo.authenticatorserver.model.AuthenticationData;
 import com.neppo.authenticatorserver.model.Subject;
 import com.neppo.authenticatorserver.model.User;
 import com.neppo.authenticatorserver.model.dao.AccountDAO;
@@ -26,19 +27,20 @@ public class IdentityService {
 		this.subject = subject;
 	}
 
-	public User getUser(String username) {
+	public Account getAccount(AuthenticationData authnData) {
 		
-		Account account = accountDAO.findByUsername(username);
+		Account account = accountDAO.findByAuthenticationData(authnData);
 		
-		if(account != null) {
+		if(account != null) {		//TODO: fix it!!!!!!
 			user = new User();
-			user.setUsername(username); 
+			user.setUsername(account.getUsername()); 
 			user.setEmail(account.getDescription());
 			user.setFirstName(account.getName());
 			user.setName(account.getName());
 			user.setSureName(account.getName());
 			user.setPassword("123");
-			return user;
+			
+			return account;
 		}
 
 		return null;
