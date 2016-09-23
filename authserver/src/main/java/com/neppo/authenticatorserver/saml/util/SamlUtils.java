@@ -93,7 +93,7 @@ public class SamlUtils {
 
 	public static final String RELAY_STATE = "RelayState";
 
-	public static final String SAMLSSOCONFIG = "samlSsoConfig";
+	public static final String SAML_SSO_CONFIG = "samlSsoConfig";
 	public static final String ISSUER_NAME_STRING = "http://localhost:8082/authserver/sso"; 		//colocar em properties		//"Coreo";
 	public static final String ISSUER_FORMAT_STRING = "urn:oasis:names:tc:SAML:2.0:nameid-format:entity";
 	public static final String NAME_ID_UNSPECIFIED = "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified";

@@ -44,9 +44,6 @@ public class SamlSingleLogoutServlet extends HttpServlet {
 
 	}
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
@@ -115,9 +112,7 @@ public class SamlSingleLogoutServlet extends HttpServlet {
 
 	}
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
+
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
@@ -131,9 +126,7 @@ public class SamlSingleLogoutServlet extends HttpServlet {
 		return signature;
 	}
 
-	/**
-	 * @return the identityService
-	 */
+
 	public IdentityService getIdentityService() {
 		if (identityService==null) {
 			ApplicationContext context = WebApplicationContextUtils.
@@ -154,12 +147,9 @@ public class SamlSingleLogoutServlet extends HttpServlet {
 		return sessionManager;
 	}
 
-	/**
-	 * @param identityService the identityService to set
-	 */
+
 	public void setIdentityService(IdentityService identityService) {
 		this.identityService = identityService;
 	}
-
 
 }

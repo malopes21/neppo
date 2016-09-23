@@ -17,7 +17,6 @@ import org.apache.log4j.Logger;
 //import org.apache.shiro.cache.Cache;
 import org.joda.time.DateTime;
 import org.opensaml.common.SAMLVersion;
-import org.opensaml.saml2.core.AttributeStatement;
 import org.opensaml.saml2.core.Assertion;
 import org.opensaml.saml2.core.AuthnContext;
 import org.opensaml.saml2.core.AuthnRequest;
@@ -30,10 +29,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.w3c.dom.Document;
 
-import com.neppo.authenticatorserver.model.Account;
 import com.neppo.authenticatorserver.model.SamlSsoConfig;
 import com.neppo.authenticatorserver.model.Subject;
-import com.neppo.authenticatorserver.model.User;
 import com.neppo.authenticatorserver.model.dao.SamlSsoConfigDAO;
 import com.neppo.authenticatorserver.model.exception.DaoException;
 import com.neppo.authenticatorserver.saml.util.SAMLSignature;
@@ -56,6 +53,7 @@ public class SamlSsoService extends HttpServlet {
 	private SamlSsoConfigDAO samlConfigDAO;
 	
 	//protected Cache<String, String> cache;
+	
 	@Autowired
 	protected LoginSessionManager sessionManager;
 
@@ -87,7 +85,7 @@ public class SamlSsoService extends HttpServlet {
 			return;
 		} 
 			
-		SamlSsoConfig samlConfig = getSamlSsoConfig(authnRequest);
+		SamlSsoConfig samlConfig = getSamlSsoConfig(authnRequest, req);
 		
 		if(samlConfig == null) {
 			
@@ -98,10 +96,10 @@ public class SamlSsoService extends HttpServlet {
 			
 		} else {
 			
-			req.getSession().setAttribute(SamlUtils.SAMLSSOCONFIG, samlConfig);
+			req.getSession().setAttribute(SamlUtils.SAML_SSO_CONFIG, samlConfig);
 		}
 		
-		if (!getIdentityService().getSubject().isAuthenticated()) {
+		if (!identityService.getSubject().isAuthenticated()) {
 
 			req.getSession().setAttribute(SamlUtils.REQUEST, samlReq);
 			req.getSession().setAttribute(SamlUtils.RELAY_STATE, samlRelayState);
@@ -122,13 +120,13 @@ public class SamlSsoService extends HttpServlet {
 
 		try {
 			if (authnRequest != null) {
-				final String username = (String) getIdentityService().getSubject().getPrincipal();  
-				final String sessionId = (String) getIdentityService().getSubject().getSession().getId(); 
+				final String username = (String) identityService.getSubject().getPrincipal();  
+				final String sessionId = (String) identityService.getSubject().getSession().getId(); 
 				
 				final LoginSession session = new LoginSession(sessionId, 
 						authnRequest.getIssuer().getValue(), new Date(), username, samlRelayState);
 				
-				getLoginSessionManager().addUserSession(username, session);
+				sessionManager.addUserSession(username, session);
 			}
 		} catch (Exception e) {
 			log.error("Fail to add service provider to logout list: ",e);
@@ -138,7 +136,8 @@ public class SamlSsoService extends HttpServlet {
 			doSsoResponse(req, resp, samlRelayState, authnRequest, errorMessage);
 			req.getSession().removeAttribute(SamlUtils.REQUEST);
 			req.getSession().removeAttribute(SamlUtils.RELAY_STATE);
-			getIdentityService().setSubject(new Subject());  				//TODO: fix it!
+			req.getSession().removeAttribute(SamlUtils.SAML_SSO_CONFIG);
+			identityService.setSubject(new Subject());  				//TODO: fix it!
 			
 		} catch (Exception e) {
 			sendToErrorPage(resp, "Error creating SSO response", e);
@@ -146,11 +145,22 @@ public class SamlSsoService extends HttpServlet {
 
 	}
 
-	private SamlSsoConfig getSamlSsoConfig(AuthnRequest authnRequest) {
+	private SamlSsoConfig getSamlSsoConfig(AuthnRequest authnRequest, HttpServletRequest req) {
+		
 		SamlSsoConfig samlConfig = null;
 		try {
-			
-			samlConfig = getSamlSsoConfigDAO().findByIssuer(authnRequest.getIssuer().getValue());
+
+			samlConfig = (SamlSsoConfig) req.getSession().getAttribute(SamlUtils.SAML_SSO_CONFIG);
+			if(samlConfig != null) {
+				return samlConfig;
+			}
+		}catch(Exception ex) {
+			ex.printStackTrace();
+		}
+		
+		try {
+
+			samlConfig = samlConfigDAO.findByIssuer(authnRequest.getIssuer().getValue());
 		}catch(Exception ex) {
 			ex.printStackTrace();
 		}
@@ -198,8 +208,7 @@ public class SamlSsoService extends HttpServlet {
 		Response response = null;
 		boolean authError = false;
 
-		if (errorMessage == null &&
-				!getIdentityService().getSubject().isAuthenticated()) {
+		if (errorMessage == null &&	!identityService.getSubject().isAuthenticated()) {
 			errorMessage = "Couldn't authenticate principal";
 			authError = true;
 		} 
@@ -215,6 +224,7 @@ public class SamlSsoService extends HttpServlet {
 		String encodedResponse = null;
 
 		Document doc = SamlUtils.asDOMDocument(response);
+		
 		//getSignature().signSAMLObject(doc.getDocumentElement());  //malopes
 
 		String xml = SamlUtils.marshall(
@@ -238,10 +248,8 @@ public class SamlSsoService extends HttpServlet {
 	protected Response createAuthnResponse(AuthnRequest authnRequest) 
 			throws IOException, MarshallingException, TransformerException, DaoException {
 
-		String username = (String)getIdentityService().
-				getSubject().getPrincipal();
-		String sessionIndex = getIdentityService().getSubject().
-				getSession().getId().toString();  
+		String username = (String) identityService.getSubject().getPrincipal();
+		String sessionIndex = identityService.getSubject().getSession().getId().toString();  
 		
 		Response response = SamlUtils.createResponse(StatusCode.SUCCESS_URI, 
 				authnRequest.getID(), SamlUtils.ISSUER_NAME_STRING);
@@ -300,7 +308,6 @@ public class SamlSsoService extends HttpServlet {
 		response.setIssueInstant(new DateTime());
 
 		return response;
-
 	}
 
 
@@ -343,35 +350,6 @@ public class SamlSsoService extends HttpServlet {
 			signature = new SAMLSignature();
 		}
 		return signature;
-	}
-
-/*	protected Cache<String,String> getCache() {
-		if (cache == null) {
-			cache = getIdentityService().getCacheManager().getCache("identity-server-saml");
-		}
-		return cache;
-	}*/
-	
-	
-	public IdentityService getIdentityService() {
-
-		return identityService;
-	}
-	
-	public SamlSsoConfigDAO getSamlSsoConfigDAO() {
-
-		return samlConfigDAO;
-	}
-
-	public LoginSessionManager getLoginSessionManager() {
-
-		return sessionManager;
-	}
-
-
-	public void setIdentityService(IdentityService identityService) {
-		
-		this.identityService = identityService;
 	}
 
 }
