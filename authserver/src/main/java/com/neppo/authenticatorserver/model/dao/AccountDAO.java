@@ -12,7 +12,7 @@ import com.neppo.authenticatorserver.model.Account;
 import com.neppo.authenticatorserver.model.AuthenticationData;
 import com.neppo.authenticatorserver.model.dao.util.HttpClientUtils;
 import com.neppo.authenticatorserver.model.exception.DaoException;
-import com.neppo.authenticatorserver.model.representation.AuthenticationRepresentation;
+import com.neppo.authenticatorserver.model.representation.AuthenticationDataRepresentation;
 
 @Service
 public class AccountDAO {
@@ -28,9 +28,7 @@ public class AccountDAO {
 			headers.add(new NameValuePair("Content-Type", "application/json"));
 			headers.add(new NameValuePair("Accept", "application/json"));
 			String urlDest = "http://localhost:8080/provisionmanager/api/authentications/accounts";
-			AuthenticationRepresentation representation = new AuthenticationRepresentation();
-			representation.setUsername(authnData.getUsername());
-			representation.setPassword(authnData.getPassword());
+			AuthenticationDataRepresentation representation = new AuthenticationDataRepresentation(authnData);
 			response = HttpClientUtils.sendPost(urlDest, headers, mapper.writeValueAsString(representation));
 		
 		}catch(Exception ex){

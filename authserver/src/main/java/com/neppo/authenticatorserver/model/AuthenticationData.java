@@ -8,6 +8,20 @@ public class AuthenticationData {
 
 	private String password;
 
+	private String remoteHost;
+
+	private String remoteAddr;
+
+	private String remoteUser;
+
+	private String requestUri;
+
+	private String sessionId;
+
+	private String userAgent;
+
+	private String issuer;
+
 	public Long getId() {
 		return id;
 	}
@@ -30,6 +44,62 @@ public class AuthenticationData {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public String getRemoteHost() {
+		return remoteHost;
+	}
+
+	public void setRemoteHost(String remoteHost) {
+		this.remoteHost = remoteHost;
+	}
+
+	public String getRemoteAddr() {
+		return remoteAddr;
+	}
+
+	public void setRemoteAddr(String remoteAddr) {
+		this.remoteAddr = remoteAddr;
+	}
+
+	public String getRemoteUser() {
+		return remoteUser;
+	}
+
+	public void setRemoteUser(String remoteUser) {
+		this.remoteUser = remoteUser;
+	}
+
+	public String getRequestUri() {
+		return requestUri;
+	}
+
+	public void setRequestUri(String requestUri) {
+		this.requestUri = requestUri;
+	}
+
+	public String getSessionId() {
+		return sessionId;
+	}
+
+	public void setSessionId(String sessionId) {
+		this.sessionId = sessionId;
+	}
+
+	public String getUserAgent() {
+		return userAgent;
+	}
+
+	public void setUserAgent(String userAgent) {
+		this.userAgent = userAgent;
+	}
+
+	public String getIssuer() {
+		return issuer;
+	}
+
+	public void setIssuer(String issuer) {
+		this.issuer = issuer;
 	}
 
 }

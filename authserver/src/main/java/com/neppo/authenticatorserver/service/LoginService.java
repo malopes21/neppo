@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.neppo.authenticatorserver.model.Account;
 import com.neppo.authenticatorserver.model.AuthenticationData;
+import com.neppo.authenticatorserver.model.SamlSsoConfig;
 import com.neppo.authenticatorserver.model.Subject;
 import com.neppo.authenticatorserver.saml.util.SAMLSignature;
+import com.neppo.authenticatorserver.saml.util.SamlUtils;
 import com.neppo.authenticatorserver.session.LoginSessionManager;
 
 @Controller
@@ -44,16 +46,11 @@ public class LoginService {
     public String login(HttpServletRequest req, HttpServletResponse resp,
     		@RequestParam(value="erro", required=false, defaultValue="") String erro, 
     		Model model) throws Exception {
-
 		
-		String username = req.getParameter(loginUsername);
-		String password = req.getParameter(loginPassword);
+		AuthenticationData authnData = createAuthenticationData(req, resp);
 		Account account = null;
-				
 		try {
-			AuthenticationData authnData = new AuthenticationData();
-			authnData.setUsername(username);
-			authnData.setPassword(password);
+			
 			account = identityService.getAccount(authnData);
 			
 		}catch(Exception ex) {
@@ -64,8 +61,8 @@ public class LoginService {
 		
 		if(account != null) {
 			
-			Subject subject = new Subject();
-			subject.setPrincipal(username);
+			Subject subject = new Subject();					//TODO: fix it!
+			subject.setPrincipal(authnData.getUsername());
 			subject.setSession(req.getSession());
 			subject.setAuthenticated(true);
 			
@@ -76,11 +73,30 @@ public class LoginService {
 		
 		} else {
 
+			String username = authnData.getUsername();
 			String errorMessage = "Invalid username/password! Username: " + ( username == null ? "" : "'"+username+"'");
 			model.addAttribute("erro", errorMessage);
 			return "login";
 		}
 
+	}
+	
+	private AuthenticationData createAuthenticationData(HttpServletRequest req, HttpServletResponse resp) {
+		
+		SamlSsoConfig samlConfig = (SamlSsoConfig) req.getSession().getAttribute(SamlUtils.SAML_SSO_CONFIG);
+		
+		AuthenticationData authnData = new AuthenticationData();
+		authnData.setIssuer(samlConfig.getIssuer());
+		authnData.setUsername(req.getParameter(loginUsername));
+		authnData.setPassword(req.getParameter(loginPassword));
+		authnData.setRemoteHost(req.getRemoteHost());
+		authnData.setRemoteAddr(req.getRemoteAddr());
+		authnData.setRemoteUser(req.getRemoteUser());
+		authnData.setRequestUri(req.getRequestURI());
+		authnData.setSessionId(req.getRequestedSessionId());
+		authnData.setUserAgent(req.getHeader("HTTP_USER_AGENT"));
+		
+		return authnData;
 	}
 	
 }
