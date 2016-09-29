@@ -2,24 +2,25 @@ package com.neppo.authenticatorserver.model;
 
 import java.util.Date;
 
-import org.springframework.hateoas.ResourceSupport;
+public class Account {
 
-public class Account extends ResourceSupport {
-
-	private Long identifier;
+	private Long id;
 	private String name;
 	private String description;
 	private Boolean master;
 	private Date expiration;
 	private String status;
 	private String username;
+	private String password;
+	private User user;
+	private Application application;
 
-	public Long getIdentifier() {
-		return identifier;
+	public Long getId() {
+		return id;
 	}
 
-	public void setIdentifier(Long identifier) {
-		this.identifier = identifier;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public String getName() {
@@ -70,10 +71,28 @@ public class Account extends ResourceSupport {
 		this.username = username;
 	}
 
-	@Override
-	public String toString() {
-		return "Account [identifier=" + identifier + ", name=" + name + ", description=" + description + ", master="
-				+ master + ", expiration=" + expiration + ", status=" + status + ", username=" + username + "]";
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public Application getApplication() {
+		return application;
+	}
+
+	public void setApplication(Application application) {
+		this.application = application;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 }

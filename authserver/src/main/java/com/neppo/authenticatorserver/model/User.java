@@ -2,12 +2,17 @@ package com.neppo.authenticatorserver.model;
 
 public class User {
 
+	private Long id;
 	private String username;
 	private String firstName;
 	private String name;
 	private String email;
 	private String sureName;
 	private String password;
+	private String middleName;
+	private String lastName;
+	private String status;
+	private String displayName;
 
 	public String getUsername() {
 		return username;
@@ -55,6 +60,46 @@ public class User {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getMiddleName() {
+		return middleName;
+	}
+
+	public void setMiddleName(String middleName) {
+		this.middleName = middleName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 
 }

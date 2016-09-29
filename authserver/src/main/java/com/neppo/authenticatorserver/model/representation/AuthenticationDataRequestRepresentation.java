@@ -4,9 +4,9 @@ import org.springframework.hateoas.ResourceSupport;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.neppo.authenticatorserver.model.AuthenticationData;
+import com.neppo.authenticatorserver.model.AuthenticationDataRequest;
 
-public class AuthenticationDataRepresentation extends ResourceSupport {
+public class AuthenticationDataRequestRepresentation extends ResourceSupport {
 
 	@JsonInclude(Include.NON_NULL)
 	private Long identifier;
@@ -42,11 +42,11 @@ public class AuthenticationDataRepresentation extends ResourceSupport {
 		return identifier;
 	}
 
-	public AuthenticationDataRepresentation() {
+	public AuthenticationDataRequestRepresentation() {
 
 	}
 
-	public AuthenticationDataRepresentation(AuthenticationData authnData) {
+	public AuthenticationDataRequestRepresentation(AuthenticationDataRequest authnData) {
 
 		this.identifier = authnData.getId();
 		this.username = authnData.getUsername();
@@ -60,9 +60,9 @@ public class AuthenticationDataRepresentation extends ResourceSupport {
 		this.issuer = authnData.getIssuer();
 	}
 
-	public static AuthenticationData build(AuthenticationDataRepresentation representation) {
+	public static AuthenticationDataRequest build(AuthenticationDataRequestRepresentation representation) {
 
-		AuthenticationData authnData = new AuthenticationData();
+		AuthenticationDataRequest authnData = new AuthenticationDataRequest();
 		authnData.setId(representation.getIdentifier());
 		authnData.setUsername(representation.getUsername());
 		authnData.setPassword(representation.getPassword());

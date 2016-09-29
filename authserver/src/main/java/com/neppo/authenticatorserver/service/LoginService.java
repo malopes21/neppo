@@ -11,8 +11,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.neppo.authenticatorserver.model.Account;
-import com.neppo.authenticatorserver.model.AuthenticationData;
+import com.neppo.authenticatorserver.model.AuthenticationDataRequest;
+import com.neppo.authenticatorserver.model.AuthenticationDataResponse;
+import com.neppo.authenticatorserver.model.AuthenticationRule;
 import com.neppo.authenticatorserver.model.SamlSsoConfig;
 import com.neppo.authenticatorserver.model.Subject;
 import com.neppo.authenticatorserver.saml.util.SAMLSignature;
@@ -47,11 +48,11 @@ public class LoginService {
     		@RequestParam(value="erro", required=false, defaultValue="") String erro, 
     		Model model) throws Exception {
 		
-		AuthenticationData authnData = createAuthenticationData(req, resp);
-		Account account = null;
+		AuthenticationDataRequest authnData = createAuthenticationData(req, resp);
+		AuthenticationDataResponse authnDataResponse = null;
 		try {
 			
-			account = identityService.getAccount(authnData);
+			authnDataResponse = identityService.getAuthnDataResponse(authnData);
 			
 		}catch(Exception ex) {
 			
@@ -59,7 +60,31 @@ public class LoginService {
 			return "login";
 		}
 		
-		if(account != null) {
+		if(authnDataResponse == null || authnDataResponse.getAccount() == null) {
+			
+			String username = authnData.getUsername();
+			String errorMessage = "Invalid username/password! Username: " + ( username == null ? "" : "'"+username+"'");
+			model.addAttribute("erro", errorMessage);
+			return "login";
+		}
+		
+		if(!authnDataResponse.isSucess()) {
+			
+			StringBuilder message = new StringBuilder();
+			message.append("Authentication Policy Error! ");
+			if(authnDataResponse.getRules() != null) {
+				for(AuthenticationRule rule: authnDataResponse.getRules()) {
+					if(!rule.isValidated()) {
+						message.append("\n"+rule.getType());
+					}
+				}
+			}
+			String errorMessage = message.toString();
+			model.addAttribute("erro", errorMessage);
+			return "login";
+		}
+		
+		if(authnDataResponse.isSucess()) {
 			
 			Subject subject = new Subject();					//TODO: fix it!
 			subject.setPrincipal(authnData.getUsername());
@@ -70,22 +95,17 @@ public class LoginService {
 			
 			req.getRequestDispatcher("/sso").forward(req, resp);
 			return null;
+		} 
 		
-		} else {
-
-			String username = authnData.getUsername();
-			String errorMessage = "Invalid username/password! Username: " + ( username == null ? "" : "'"+username+"'");
-			model.addAttribute("erro", errorMessage);
-			return "login";
-		}
+		return null;
 
 	}
 	
-	private AuthenticationData createAuthenticationData(HttpServletRequest req, HttpServletResponse resp) {
+	private AuthenticationDataRequest createAuthenticationData(HttpServletRequest req, HttpServletResponse resp) {
 		
 		SamlSsoConfig samlConfig = (SamlSsoConfig) req.getSession().getAttribute(SamlUtils.SAML_SSO_CONFIG);
 		
-		AuthenticationData authnData = new AuthenticationData();
+		AuthenticationDataRequest authnData = new AuthenticationDataRequest();
 		authnData.setIssuer(samlConfig.getIssuer());
 		authnData.setUsername(req.getParameter(loginUsername));
 		authnData.setPassword(req.getParameter(loginPassword));
@@ -94,7 +114,7 @@ public class LoginService {
 		authnData.setRemoteUser(req.getRemoteUser());
 		authnData.setRequestUri(req.getRequestURI());
 		authnData.setSessionId(req.getRequestedSessionId());
-		authnData.setUserAgent(req.getHeader("HTTP_USER_AGENT"));
+		authnData.setUserAgent(req.getHeader("User-Agent"));
 		
 		return authnData;
 	}

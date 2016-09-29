@@ -1,6 +1,6 @@
 package com.neppo.authenticatorserver.model;
 
-public class AuthenticationData {
+public class AuthenticationDataRequest {
 
 	private Long id;
 

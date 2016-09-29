@@ -5,16 +5,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.neppo.authenticatorserver.model.Account;
-import com.neppo.authenticatorserver.model.AuthenticationData;
+import com.neppo.authenticatorserver.model.AuthenticationDataRequest;
+import com.neppo.authenticatorserver.model.AuthenticationDataResponse;
 import com.neppo.authenticatorserver.model.Subject;
 import com.neppo.authenticatorserver.model.User;
-import com.neppo.authenticatorserver.model.dao.AccountDAO;
+import com.neppo.authenticatorserver.model.dao.AuthenticationDataRequestRestDAO;
 
 @Service
 public class IdentityService {
 
 	@Autowired
-	private AccountDAO accountDAO;
+	private AuthenticationDataRequestRestDAO accountDAO;
 	
 	private Subject subject = new Subject();
 	private User user = new User();
@@ -27,20 +28,20 @@ public class IdentityService {
 		this.subject = subject;
 	}
 
-	public Account getAccount(AuthenticationData authnData) {
+	public AuthenticationDataResponse getAuthnDataResponse(AuthenticationDataRequest authnData) {
 		
-		Account account = accountDAO.findByAuthenticationData(authnData);
+		AuthenticationDataResponse authnDataResponse = accountDAO.findByAuthenticationData(authnData);
 		
-		if(account != null) {		//TODO: fix it!!!!!!
+		if(authnDataResponse != null) {		//TODO: fix it!!!!!!
 			user = new User();
-			user.setUsername(account.getUsername()); 
-			user.setEmail(account.getDescription());
-			user.setFirstName(account.getName());
-			user.setName(account.getName());
-			user.setSureName(account.getName());
-			user.setPassword("123");
+			user.setUsername(authnDataResponse.getAccount().getUsername()); 
+			user.setEmail(authnDataResponse.getAccount().getDescription());
+			user.setFirstName(authnDataResponse.getAccount().getName());
+			user.setName(authnDataResponse.getAccount().getName());
+			user.setSureName(authnDataResponse.getAccount().getName());
+			user.setPassword(authnDataResponse.getAccount().getPassword());
 			
-			return account;
+			return authnDataResponse;
 		}
 
 		return null;
