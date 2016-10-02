@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" ></meta>
+  <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css"></link>  
+</head>
+
+<body ng-app="BlankApp" ng-cloak="">
+  <div layout="column" flex="" id="content" role="main">
+    <md-content flex="" id="content">
+			<div class="header" layout="column" layout-align="center center" style="margin: 8px;text-align: center;">
+				<h1 style="font-family: 'Open Sans', arial;-webkit-font-smoothing: antialiased;color: #555;font-size: 42px;font-weight: 300;margin-bottom: 10px;">IDENTITYful</h1>
+				<h2 style="font-family: 'Open Sans',arial,sans-serif;-webkit-font-smoothing: antialiased;color: #555;font-size: 24px;font-weight: 300;margin-top: 0;margin-bottom: 20px;text-align: center;">Verificação em duas etapas</h2>
+                <h2 style="font-family: 'Open Sans',arial,sans-serif;-webkit-font-smoothing: antialiased;color: #555;font-size: 13px;font-weight: 400;margin-bottom: 20px;margin-left: auto;margin-right: auto;text-align: center;width: 354px;margin-bottom:15px;">
+					Para ajudar a manter seu e-mail, fotos e outros conteúdos mais seguros, complete a tarefa abaixo.
+				</h2>
+			</div>
+			<div layout="column" layout-align="center center">
+        <md-card layout="column" style="width: 405px;">
+          <md-card-content style="padding: 40px 40px;">
+          	<form action="mfa" >
+            <img class="JC07Dd" src="https://ssl.gstatic.com/accounts/marc/authenticator.png" alt="" style="display: block;height: 100px;margin: -10px auto 10px;width: 125px;"></img>              
+            <div style="font-size: 15px;font-weight: bold;margin-bottom: 18px;">Digitar um código de verificação</div>
+            <div style="font-size: 15px;margin-bottom: 18px;">Receber um código de verificação do app <strong>Google Authenticator</strong></div>
+            <md-input-container style="width: 100%;margin-bottom: 0;">
+              <label>Digite o código de seis dígitos</label>
+              <input ng-model="code" />
+            </md-input-container>            
+            <md-input-container style="width: 100%;">
+              <md-button type="submit" class="md-raised md-primary" style="width: 100%;margin: 0;">Concluído</md-button>
+            </md-input-container>
+            </form>
+          </md-card-content>
+        </md-card>
+        </div>
+        </md-content>
+      </div>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js"></script>
+  <!-- Angular Material Library -->
+  <script src="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
+  <!-- Your application bootstrap  -->
+  <script type="text/javascript">
+    /**
+     * You must include the dependency on 'ngMaterial'
+     */
+    angular.module('BlankApp', ['ngMaterial']);
+  </script>
+</body>
+
+</html>

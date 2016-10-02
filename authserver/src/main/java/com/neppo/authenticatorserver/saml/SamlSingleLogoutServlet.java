@@ -3,28 +3,7 @@
  */
 package com.neppo.authenticatorserver.saml;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.log4j.Logger;
-import org.opensaml.saml2.core.LogoutRequest;
-import org.opensaml.saml2.core.LogoutResponse;
-import org.opensaml.xml.util.Base64;
-import org.springframework.context.ApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
-import org.w3c.dom.Document;
-
-import com.neppo.authenticatorserver.service.IdentityService;
-import com.neppo.authenticatorserver.saml.util.SAMLSignature;
-import com.neppo.authenticatorserver.saml.util.SamlUtils;
-import com.neppo.authenticatorserver.session.LoginSessionManager;
-
-import com.neppo.authenticatorserver.saml.util.ConfigContext;
 
 /**
  * @author bhlangonijr
@@ -32,10 +11,10 @@ import com.neppo.authenticatorserver.saml.util.ConfigContext;
  */
 public class SamlSingleLogoutServlet extends HttpServlet {
 
-	private static final Logger log = Logger.getLogger(SamlSingleLogoutServlet.class);
+/*	private static final Logger log = Logger.getLogger(SamlSingleLogoutServlet.class);
 	private static final long serialVersionUID = -5187271969594996989L;
 
-	protected IdentityService identityService;
+	//protected IdentityService identityService;
 	protected static final String loginRedirectUrl = "login.html";
 	protected SAMLSignature signature;
 	protected LoginSessionManager sessionManager;
@@ -151,5 +130,5 @@ public class SamlSingleLogoutServlet extends HttpServlet {
 	public void setIdentityService(IdentityService identityService) {
 		this.identityService = identityService;
 	}
-
+*/
 }

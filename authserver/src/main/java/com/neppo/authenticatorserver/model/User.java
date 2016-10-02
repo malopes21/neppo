@@ -13,7 +13,7 @@ public class User {
 	private String lastName;
 	private String status;
 	private String displayName;
-
+	
 	public String getUsername() {
 		return username;
 	}

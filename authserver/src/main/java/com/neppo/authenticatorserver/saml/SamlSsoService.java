@@ -27,18 +27,20 @@ import org.opensaml.xml.util.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.w3c.dom.Document;
 
 import com.neppo.authenticatorserver.model.SamlSsoConfig;
-import com.neppo.authenticatorserver.model.Subject;
 import com.neppo.authenticatorserver.model.dao.SamlSsoConfigDAO;
 import com.neppo.authenticatorserver.model.exception.DaoException;
 import com.neppo.authenticatorserver.saml.util.SAMLSignature;
 import com.neppo.authenticatorserver.saml.util.SamlUtils;
 import com.neppo.authenticatorserver.saml.util.Util;
-import com.neppo.authenticatorserver.service.IdentityService;
+import com.neppo.authenticatorserver.service.AuthenticationService;
 import com.neppo.authenticatorserver.session.LoginSession;
 import com.neppo.authenticatorserver.session.LoginSessionManager;
+import com.neppo.authenticatorserver.session.Session;
+import com.neppo.authenticatorserver.session.Subject;
 
 @Controller
 public class SamlSsoService extends HttpServlet {
@@ -47,7 +49,7 @@ public class SamlSsoService extends HttpServlet {
 	private static final Logger log = Logger.getLogger(SamlSsoService.class);
 
 	@Autowired
-	protected IdentityService identityService;
+	protected AuthenticationService authenticationService;
 	
 	@Autowired
 	private SamlSsoConfigDAO samlConfigDAO;
@@ -64,151 +66,103 @@ public class SamlSsoService extends HttpServlet {
 	private  static final String errorRedirectUrl = "./ops";
 	protected SAMLSignature signature;
 	
-	private String samlReq = null;
-	private String samlRelayState = null;
-	private String errorMessage = null;
-	
 
 	@RequestMapping(value="/sso")
     public void signOn(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
-		samlReq=null;	samlRelayState = null;	errorMessage = null;
+		String samlRelayState = null;	
+		String errorMessage = null;
 
-		samlReq = getSamlRequest(req);
-		AuthnRequest authnRequest = getAuthnRequestInSession(samlReq);
-
-		if (authnRequest == null) {
-			
-			errorMessage = "Invalid SAML Request Parameters";
-			String redirect = errorRedirectUrl + "?erro="+errorMessage;
-			resp.sendRedirect("./" + redirect);
-			return;
-		} 
-			
-		SamlSsoConfig samlConfig = getSamlSsoConfig(authnRequest, req);
+		AuthnRequest authnRequest = SamlRequest.build(req);
 		
-		if(samlConfig == null) {
+		Session.addAttribute(SamlUtils.REQUEST, authnRequest);
+		Session.addAttribute(SamlUtils.RELAY_STATE, samlRelayState);
+
+		try {
 			
-			errorMessage = "SamlConfig not found.";
-			String redirect = errorRedirectUrl + "?erro="+errorMessage;
+			SamlRequest.validate(authnRequest, samlConfigDAO);
+			
+		} catch (Exception e) { //CATEGORIZAR TODOS OS ERROS
+			e.printStackTrace();
+			String redirect = errorRedirectUrl + "?erro="+e.getMessage();
 			resp.sendRedirect("./" + redirect);
 			return;
 			
+		}
+			
+		
+		if (isLoggedUser() == false) {   
+			
+			if (log.isDebugEnabled()) {
+				log.debug("User session not found[" + authnRequest.getID() + "]. Sending user to login page: " + loginRedirectUrl);
+			}
+			
+			authenticateUser(req, resp);
+
 		} else {
 			
-			req.getSession().setAttribute(SamlUtils.SAML_SSO_CONFIG, samlConfig);
-		}
-		
-		if (!identityService.getSubject().isAuthenticated()) {
-
-			req.getSession().setAttribute(SamlUtils.REQUEST, samlReq);
-			req.getSession().setAttribute(SamlUtils.RELAY_STATE, samlRelayState);
-
-			String redirect = loginRedirectUrl;
-			resp.sendRedirect("./" + redirect);
-
 			if (log.isDebugEnabled()) {
-				log.debug("User session not found[" + authnRequest.getID() + "]. Sending user to login page: " + redirect);
+				log.debug("User session found[" + authnRequest.getID());
 			}
-			return;
-		}
-		
+/*
+			try {
+				if (authnRequest != null) {
+					final String username = (String) Subject.getLoggedUser().getUsername();  
+					final String sessionId = Subject.getSessionId(); 
+					
+					final LoginSession session = new LoginSession(sessionId, 
+							authnRequest.getIssuer().getValue(), new Date(), username, samlRelayState);
+					
+					sessionManager.addUserSession(username, session);
+				}
+			} catch (Exception e) {
+				log.error("Fail to add service provider to logout list: ",e);
+			}*/
 
-		if (log.isDebugEnabled()) {
-			log.debug("User session found[" + authnRequest.getID());
-		}
-
-		try {
-			if (authnRequest != null) {
-				final String username = (String) identityService.getSubject().getPrincipal();  
-				final String sessionId = (String) identityService.getSubject().getSession().getId(); 
+			try {
 				
-				final LoginSession session = new LoginSession(sessionId, 
-						authnRequest.getIssuer().getValue(), new Date(), username, samlRelayState);
+				sendResponse(req, resp, samlRelayState, authnRequest, errorMessage);
 				
-				sessionManager.addUserSession(username, session);
-			}
-		} catch (Exception e) {
-			log.error("Fail to add service provider to logout list: ",e);
-		}
-
-		try {
-			doSsoResponse(req, resp, samlRelayState, authnRequest, errorMessage);
-			req.getSession().removeAttribute(SamlUtils.REQUEST);
-			req.getSession().removeAttribute(SamlUtils.RELAY_STATE);
-			req.getSession().removeAttribute(SamlUtils.SAML_SSO_CONFIG);
-			identityService.setSubject(new Subject());  				//TODO: fix it!
+			} catch (Exception e) {
+				sendToErrorPage(resp, "Error creating SSO response", e);
+			} 
 			
-		} catch (Exception e) {
-			sendToErrorPage(resp, "Error creating SSO response", e);
-		} 
+		}
+		
 
 	}
+	
+	private void authenticateUser(HttpServletRequest request, HttpServletResponse response) {
 
-	private SamlSsoConfig getSamlSsoConfig(AuthnRequest authnRequest, HttpServletRequest req) {
-		
-		SamlSsoConfig samlConfig = null;
 		try {
-
-			samlConfig = (SamlSsoConfig) req.getSession().getAttribute(SamlUtils.SAML_SSO_CONFIG);
-			if(samlConfig != null) {
-				return samlConfig;
-			}
-		}catch(Exception ex) {
-			ex.printStackTrace();
+			response.sendRedirect("./" + loginRedirectUrl);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
-		try {
-
-			samlConfig = samlConfigDAO.findByIssuer(authnRequest.getIssuer().getValue());
-		}catch(Exception ex) {
-			ex.printStackTrace();
-		}
-		return samlConfig;
+		return;
+		
 	}
-
-	private String getSamlRequest(HttpServletRequest req) {
+	
+	private boolean isLoggedUser() {
 		
-		String localSamlReq = null;
-		try {
-			String samlReq64 = req.getParameter(SamlUtils.REQUEST);
-			if (samlReq64!=null) {
-				localSamlReq = SamlUtils.decodeMessage(samlReq64);
-			}
-		} catch (DataFormatException e) {
-			errorMessage = "Coudn't decode SAML Request message: "+e.getMessage();
-			log.error(errorMessage);
-		}
-
-		if (Util.isEmpty(localSamlReq)) {
-			localSamlReq = (String) req.getSession().getAttribute(SamlUtils.REQUEST);
-			if (Util.isEmpty(localSamlReq)) {
-				errorMessage = "Invalid SAML Request Parameters";
-			}
-		}
-
-		samlRelayState = req.getParameter(SamlUtils.RELAY_STATE);
-
-		if (Util.isEmpty(samlRelayState)) {
-			samlRelayState = (String) req.getSession().getAttribute(SamlUtils.RELAY_STATE);
-		}
-
-		if (log.isDebugEnabled()) {
-			log.debug("SAMLRequest-decoded: "+localSamlReq);
+		if (Subject.getLoggedUser() == null) {   
+			return false;
 		}
 		
-		return localSamlReq;
+		return true;
 	}
 
 
-	protected void doSsoResponse(HttpServletRequest req, HttpServletResponse resp, 
+	protected void sendResponse(HttpServletRequest req, HttpServletResponse resp, 
 			String relayState, AuthnRequest authnRequest, String errorMessage)
 					throws Exception {
 
 		Response response = null;
 		boolean authError = false;
 
-		if (errorMessage == null &&	!identityService.getSubject().isAuthenticated()) {
+		if (errorMessage == null &&	Subject.getLoggedUser() == null) {
 			errorMessage = "Couldn't authenticate principal";
 			authError = true;
 		} 
@@ -219,7 +173,7 @@ public class SamlSsoService extends HttpServlet {
 			response = createAuthnErrorResponse(authnRequest, errorMessage, authError);
 		}
 
-		String url = authnRequest.getAssertionConsumerServiceURL();
+		String url = authnRequest.getAssertionConsumerServiceURL();  //Here !!!
 
 		String encodedResponse = null;
 
@@ -241,6 +195,9 @@ public class SamlSsoService extends HttpServlet {
 				replace("${relayState}", ""));
 		
 		out.close();
+		
+		req.getSession().removeAttribute(SamlUtils.REQUEST);
+		req.getSession().removeAttribute(SamlUtils.RELAY_STATE);
 
 	}
 
@@ -248,8 +205,8 @@ public class SamlSsoService extends HttpServlet {
 	protected Response createAuthnResponse(AuthnRequest authnRequest) 
 			throws IOException, MarshallingException, TransformerException, DaoException {
 
-		String username = (String) identityService.getSubject().getPrincipal();
-		String sessionIndex = identityService.getSubject().getSession().getId().toString();  
+		String username = Subject.getLoggedUser().getUsername(); 
+		String sessionIndex = Subject.getSessionId(); 
 		
 		Response response = SamlUtils.createResponse(StatusCode.SUCCESS_URI, 
 				authnRequest.getID(), SamlUtils.ISSUER_NAME_STRING);
@@ -311,23 +268,6 @@ public class SamlSsoService extends HttpServlet {
 	}
 
 
-	private AuthnRequest getAuthnRequestInSession(String samlReq) {
-
-		AuthnRequest authnRequest = null;
-
-		try {
-			if (samlReq != null) { 
-				authnRequest = SamlUtils.deserializeRequest(samlReq);
-				if (log.isDebugEnabled()) {
-					log.debug("AuthnRequest ID: "+authnRequest.getID());
-					SamlUtils.printToFile(SamlUtils.unmarshall(samlReq), null);
-				}
-			}
-		} catch (Exception e) {
-			log.error("Couldn't parse SAML Request Parameters",e);
-		}
-		return authnRequest;
-	}
 
 	protected void sendToErrorPage(HttpServletResponse resp,
 			String errorMsg, Throwable e) throws IOException {
