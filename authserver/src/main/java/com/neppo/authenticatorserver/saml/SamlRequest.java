@@ -16,20 +16,21 @@ public class SamlRequest {
 	
 	public static void validate(AuthnRequest authnRequest, SamlSsoConfigDAO samlConfigDAO) {
 		
+		if (authnRequest == null) {
+			throw new RuntimeException("Invalid SAML Request.");
+		} 
+		
 		SamlSsoConfig samlConfig = samlConfigDAO.findByIssuer(authnRequest.getIssuer().getValue());
 		
 		if(!authnRequest.getIssuer().getValue().equals(samlConfig.getIssuer()))
-			throw new RuntimeException("Invalid Issuer");
+			throw new RuntimeException("Invalid Issuer.");
 		
 		if(!authnRequest.getAssertionConsumerServiceURL().equals(samlConfig.getAssertionConsumerServiceURL()))
-			throw new RuntimeException("Invalid assertion consumer URL");
+			throw new RuntimeException("Invalid assertion consumer URL.");
 		
-		if (authnRequest == null) {
-			
-			String errorMessage = "Invalid SAML Request.";
-			
-			throw new RuntimeException(errorMessage);
-		} 
+		if(!authnRequest.getDestination().equals(samlConfig.getDestination())) {
+			throw new RuntimeException("Invalid saml destination.");
+		}
 		
 	}
 	
@@ -46,7 +47,6 @@ public class SamlRequest {
 
 	private static String parseSaml(HttpServletRequest req) {
 		
-		String errorMessage = null;
 		String localSamlReq = null;
 		String samlRelayState = null;
 		
@@ -56,14 +56,13 @@ public class SamlRequest {
 				localSamlReq = SamlUtils.decodeMessage(samlReq64);
 			}
 		} catch (DataFormatException e) {
-			errorMessage = "Coudn't decode SAML Request message: "+e.getMessage();
-			//log.error(errorMessage);
+			throw new RuntimeException("Coudn't decode SAML Request message: "+e.getMessage());
 		}
 
 		if (Util.isEmpty(localSamlReq)) {
 			localSamlReq = (String) req.getSession().getAttribute(SamlUtils.REQUEST);
 			if (Util.isEmpty(localSamlReq)) {
-				errorMessage = "Invalid SAML Request Parameters";
+				throw new RuntimeException("Invalid SAML Request Parameters");
 			}
 		}
 
@@ -72,10 +71,6 @@ public class SamlRequest {
 		if (Util.isEmpty(samlRelayState)) {
 			samlRelayState = (String) req.getSession().getAttribute(SamlUtils.RELAY_STATE);
 		}
-
-		/*if (log.isDebugEnabled()) {
-			log.debug("SAMLRequest-decoded: "+localSamlReq);
-		}*/
 		
 		return localSamlReq;
 	}
@@ -87,13 +82,9 @@ public class SamlRequest {
 		try {
 			if (samlReq != null) { 
 				authnRequest = SamlUtils.deserializeRequest(samlReq);
-				/*if (log.isDebugEnabled()) {
-					log.debug("AuthnRequest ID: "+authnRequest.getID());
-					SamlUtils.printToFile(SamlUtils.unmarshall(samlReq), null);
-				}*/
 			}
 		} catch (Exception e) {
-			//log.error("Couldn't parse SAML Request Parameters",e);
+			throw new RuntimeException("Couldn't parse SAML Request Parameters, " + e.getMessage());
 		}
 		return authnRequest;
 	}

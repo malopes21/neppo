@@ -5,6 +5,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.opensaml.saml2.core.AuthnRequest;
 //import org.apache.shiro.cache.Cache;
 //import org.apache.shiro.web.session.HttpServletSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +19,17 @@ import com.neppo.authenticatorserver.model.AuthenticationResponse;
 import com.neppo.authenticatorserver.model.AuthenticationRule;
 import com.neppo.authenticatorserver.model.AuthenticationRuleType;
 import com.neppo.authenticatorserver.model.SamlSsoConfig;
+import com.neppo.authenticatorserver.model.User;
 import com.neppo.authenticatorserver.model.dao.SamlSsoConfigDAO;
+import com.neppo.authenticatorserver.model.exception.DaoException;
 import com.neppo.authenticatorserver.saml.util.SAMLSignature;
+import com.neppo.authenticatorserver.saml.util.SamlUtils;
 import com.neppo.authenticatorserver.service.AuthenticationService;
+import com.neppo.authenticatorserver.service.exception.AccountNotFoundException;
+import com.neppo.authenticatorserver.service.exception.AuthenticationPolicyException;
 import com.neppo.authenticatorserver.session.LoginSessionManager;
+import com.neppo.authenticatorserver.session.Session;
+import com.neppo.authenticatorserver.session.Subject;
 
 @Controller
 public class LoginController {
@@ -30,8 +38,8 @@ public class LoginController {
 	protected AuthenticationService authenticationService;
 	protected LoginSessionManager sessionManager;
 
-	public static final String loginUsername = "user.email";
-	public static final String loginPassword = "user.password";
+	public static final String LOGIN_USERNAME = "user.email";
+	public static final String LOGIN_PASSWORD = "user.password";
 	
 	@Autowired
 	private SamlSsoConfigDAO samlConfigDAO; 
@@ -54,48 +62,47 @@ public class LoginController {
     		@RequestParam(value="erro", required=false, defaultValue="") String erro, 
     		Model model) throws Exception {
 		
-		AuthenticationRequest authnData = createAuthenticationData(req, resp);
-		AuthenticationResponse authnDataResponse = null;
+		AuthenticationRequest authnRequest = createAuthenticationData(req, resp);
+		AuthenticationResponse authnResponse = null;
 		try {
 			
-			authnDataResponse = authenticationService.authenticateUser(authnData);
+			authnResponse = authenticationService.authenticateUser(authnRequest);
 			
-		}catch(Exception ex) {
+			if(authnResponse.isSucess() && haveMFA(authnResponse.getRules())) {
+				req.getSession().setAttribute("authnResponse", authnResponse);
+				return "mfa";
+			}
+			
+		} catch(AuthenticationPolicyException ex) {
+			
+			model.addAttribute("erro", ex.getMessage());			
+			return "login";
+		
+		} catch(AccountNotFoundException ex) {
+			
+			model.addAttribute("erro", ex.getMessage());			
+			return "login";
+		
+		} catch(DaoException ex) {
+			
+			model.addAttribute("erro", ex.getMessage());			
+			return "login";
+		
+		} catch(Exception ex) {
 			
 			model.addAttribute("erro", ex.getMessage());			
 			return "login";
 		}
-		
-		//mudar para tratamento de exceção
-		if(authnDataResponse == null || authnDataResponse.getAccount() == null) {
-			
-			String username = authnData.getUsername();
-			String errorMessage = "Invalid username/password! Username: " + ( username == null ? "" : "'"+username+"'");
-			model.addAttribute("erro", errorMessage);
-			return "login";
-		}
-		
-		if(!authnDataResponse.isSucess()) {
-			
-			StringBuilder message = new StringBuilder();
-			message.append("Authentication Policy Error! ");
-			if(authnDataResponse.getRules() != null) {
-				for(AuthenticationRule rule: authnDataResponse.getRules()) {
-					if(!rule.isValidated()) {
-						message.append("\n"+rule.getType());
-					}
-				}
-			}
-			String errorMessage = message.toString();
-			model.addAttribute("erro", errorMessage);
-			return "login";
-		}
-		
-		if(authnDataResponse.isSucess()) {
 
-			if(haveMFA(authnDataResponse.getRules())) {
-				return "mfa";
-			}
+		if(authnResponse.isSucess() && ! haveMFA(authnResponse.getRules())) {
+
+			User user = new User();
+			user.setUsername(authnResponse.getAccount().getUsername());
+			user.setEmail(authnResponse.getAccount().getDescription());
+			user.setFirstName(authnResponse.getAccount().getName());
+			user.setName(authnResponse.getAccount().getName());
+			user.setSureName(authnResponse.getAccount().getName());
+			Subject.authenticate(user);
 			
 			req.getRequestDispatcher("/sso").forward(req, resp);
 			return null;
@@ -119,13 +126,13 @@ public class LoginController {
 
 	private AuthenticationRequest createAuthenticationData(HttpServletRequest req, HttpServletResponse resp) {
 		
-		SamlSsoConfig samlConfig = samlConfigDAO.findByIssuer("exampleidp");
-				//(SamlSsoConfig) req.getSession().getAttribute(SamlUtils.SAML_SSO_CONFIG);  //usar o SAML_REQUEST
-		
+		AuthnRequest authnRequest = (AuthnRequest) Session.getAttribute(SamlUtils.REQUEST);
+		SamlSsoConfig samlConfig = samlConfigDAO.findByIssuer(authnRequest.getIssuer().getValue());
+				
 		AuthenticationRequest authnData = new AuthenticationRequest();
 		authnData.setIssuer(samlConfig.getIssuer());
-		authnData.setUsername(req.getParameter(loginUsername));
-		authnData.setPassword(req.getParameter(loginPassword));
+		authnData.setUsername(req.getParameter(LOGIN_USERNAME));
+		authnData.setPassword(req.getParameter(LOGIN_PASSWORD));
 		authnData.setRemoteHost(req.getRemoteHost());
 		authnData.setRemoteAddr(req.getRemoteAddr());
 		authnData.setRemoteUser(req.getRemoteUser());

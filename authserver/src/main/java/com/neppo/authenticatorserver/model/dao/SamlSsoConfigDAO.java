@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,7 +39,7 @@ public class SamlSsoConfigDAO {
 		
 		try {
 			
-			String sResponse = HttpClientUtils.processResponse(response);
+			String sResponse = EntityUtils.toString(response.getEntity());
 			ObjectMapper mapper = new ObjectMapper();
 			SamlSsoConfig obj = mapper.readValue(sResponse, SamlSsoConfig.class);
 			return obj;

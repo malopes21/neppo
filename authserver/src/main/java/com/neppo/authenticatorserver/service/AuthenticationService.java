@@ -8,79 +8,96 @@ import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.neppo.authenticatorserver.model.AuthenticationRequest;
 import com.neppo.authenticatorserver.model.AuthenticationResponse;
-import com.neppo.authenticatorserver.model.User;
+import com.neppo.authenticatorserver.model.AuthenticationRule;
 import com.neppo.authenticatorserver.model.dao.util.HttpClientUtils;
 import com.neppo.authenticatorserver.model.exception.DaoException;
 import com.neppo.authenticatorserver.model.representation.AuthenticationRequestRepresentation;
 import com.neppo.authenticatorserver.model.representation.AuthenticationResponseRepresentation;
-import com.neppo.authenticatorserver.session.Subject;
+import com.neppo.authenticatorserver.service.exception.AccountNotFoundException;
+import com.neppo.authenticatorserver.service.exception.AuthenticationPolicyException;
+import com.neppo.authenticatorserver.service.exception.JsonParseException;
 
 @Service
 public class AuthenticationService {
+	
+	private static final String URL_DESTINATION_SERVICE = "http://localhost:8080/provisionmanager/api/authentications/accounts";
 
 	public AuthenticationResponse authenticateUser(AuthenticationRequest authnData) {
 
-		AuthenticationResponse authnDataResponse = authenticate(authnData);
-
-		// retirar a validaçao de null para exception
-
-		if (authnDataResponse != null) {
-			User user = new User();
-			user.setUsername(authnDataResponse.getAccount().getUsername());
-			user.setEmail(authnDataResponse.getAccount().getDescription());
-			user.setFirstName(authnDataResponse.getAccount().getName());
-			user.setName(authnDataResponse.getAccount().getName());
-			user.setSureName(authnDataResponse.getAccount().getName());
-			Subject subject = Subject.authenticate(user);
-
-			return authnDataResponse;
+		AuthenticationResponse authnResponse = tryAuthenticate(authnData);
+		
+		if(!authnResponse.isSucess()) {
+			
+			StringBuilder message = new StringBuilder();
+			message.append("Authentication Policy Error! ");
+			if(authnResponse.getRules() != null) {
+				for(AuthenticationRule rule: authnResponse.getRules()) {
+					if(!rule.isValidated()) {
+						message.append("\n"+rule.getType());
+					}
+				}
+			}
+			
+			throw new AuthenticationPolicyException(message.toString());
 		}
-
-		return null;
+		
+		return authnResponse;
 	}
 
-	private AuthenticationResponse authenticate(AuthenticationRequest authnData) {
+	private AuthenticationResponse tryAuthenticate(AuthenticationRequest authnData) {
 
-		ObjectMapper mapper = new ObjectMapper();
+
 		HttpResponse response = null;
 		try {
-			List<NameValuePair> headers = new ArrayList<>();
-
-			headers.add(new NameValuePair("Host", "localhost:8080"));
-			headers.add(new NameValuePair("Content-Type", "application/json"));
-			headers.add(new NameValuePair("Accept", "application/json"));
-			String urlDest = "http://localhost:8080/provisionmanager/api/authentications/accounts";
+			List<NameValuePair> headers = createHttpHeaders();
 			AuthenticationRequestRepresentation representation = new AuthenticationRequestRepresentation(authnData);
-			response = HttpClientUtils.sendPost(urlDest, headers, mapper.writeValueAsString(representation));
+			response = HttpClientUtils.sendPost(URL_DESTINATION_SERVICE, headers, 
+					AuthenticationRequestRepresentation.mapper(representation));
 
-		} catch (Exception ex) {
+		} catch (JsonProcessingException ex) {
+			
 			ex.printStackTrace();
-			throw new DaoException("Erro de acesso ao Provision Manager API. " + ex.getCause().getMessage()); // mudar
+			throw new JsonParseException("Erro de conversao de objeto AuthenticationRequestRepresentation para formato JSON. " 
+					+ ex.getCause().getMessage());
+		
+		} catch (Exception ex) {
+			
+			ex.printStackTrace();
+			throw new DaoException("Erro de acesso a Provision Manager Authentication API. " 
+					+ ex.getCause().getMessage());
 		}
 
 		if (response != null && response.getStatusLine().getStatusCode() == 404) {
-			return null; // tudo em exception
+			
+			throw new AccountNotFoundException("Conta de usuario com username/password nao encontrada! Status:" 
+					+ response.getStatusLine());
 		}
 
 		try {
 
 			String sResponse = EntityUtils.toString(response.getEntity());
-			// String sResponse = HttpClientUtils.processResponse(response);
-
-			// definir um builder
-			AuthenticationResponseRepresentation authenticationResponseRepresentation = mapper.readValue(sResponse,
-					AuthenticationResponseRepresentation.class);
-			return AuthenticationResponseRepresentation.build(authenticationResponseRepresentation);
-
+			AuthenticationResponse authnResponse = AuthenticationResponseRepresentation.build(sResponse);
+			return authnResponse;
+			
 		} catch (Exception ex) {
 
 			ex.printStackTrace();
-			return null; // tudo em exception
+			throw new JsonParseException("Erro de conversao de formato JSON para objeto AuthenticationResponseRepresentation. " 
+					+ ex.getCause().getMessage());
 		}
 
+	}
+
+	private List<NameValuePair> createHttpHeaders() {
+		List<NameValuePair> headers = new ArrayList<>();
+
+		headers.add(new NameValuePair("Host", "localhost:8080"));
+		headers.add(new NameValuePair("Content-Type", "application/json"));
+		headers.add(new NameValuePair("Accept", "application/json"));
+		return headers;
 	}
 
 }

@@ -4,6 +4,8 @@ import org.springframework.hateoas.ResourceSupport;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.neppo.authenticatorserver.model.AuthenticationRequest;
 
 public class AuthenticationRequestRepresentation extends ResourceSupport {
@@ -75,6 +77,12 @@ public class AuthenticationRequestRepresentation extends ResourceSupport {
 		authnData.setIssuer(representation.getIssuer());
 		
 		return authnData;
+	}
+	
+	public static String mapper(AuthenticationRequestRepresentation representation) throws JsonProcessingException {
+		
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.writeValueAsString(representation);
 	}
 
 	public void setIdentifier(Long identifier) {

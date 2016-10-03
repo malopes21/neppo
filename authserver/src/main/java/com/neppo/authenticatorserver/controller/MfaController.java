@@ -8,6 +8,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.neppo.authenticatorserver.model.AuthenticationResponse;
+import com.neppo.authenticatorserver.model.User;
+import com.neppo.authenticatorserver.session.Subject;
+
 @Controller
 public class MfaController {
 
@@ -16,6 +20,21 @@ public class MfaController {
 			@RequestParam(value = "erro", required = false, defaultValue = "") String erro, Model model)
 			throws Exception {
 
+		//validar MFA
+
+		AuthenticationResponse authnResponse = (AuthenticationResponse) req.getSession().getAttribute("authnResponse");
+		if(authnResponse == null) {
+			return "login";
+		}
+		
+		User user = new User();
+		user.setUsername(authnResponse.getAccount().getUsername());
+		user.setEmail(authnResponse.getAccount().getDescription());
+		user.setFirstName(authnResponse.getAccount().getName());
+		user.setName(authnResponse.getAccount().getName());
+		user.setSureName(authnResponse.getAccount().getName());
+		Subject.authenticate(user);
+		
 		req.getRequestDispatcher("/sso").forward(req, resp);
 		return null;
 	}

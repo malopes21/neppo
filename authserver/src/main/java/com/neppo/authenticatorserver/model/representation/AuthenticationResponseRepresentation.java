@@ -1,5 +1,6 @@
 package com.neppo.authenticatorserver.model.representation;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +8,9 @@ import org.springframework.hateoas.ResourceSupport;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.neppo.authenticatorserver.model.AuthenticationResponse;
 import com.neppo.authenticatorserver.model.AuthenticationRule;
 
@@ -78,6 +82,14 @@ public class AuthenticationResponseRepresentation extends ResourceSupport {
 		}
 		
 		return authnData;
+	}
+	
+	public static AuthenticationResponse build(String representationString) throws JsonParseException, JsonMappingException, IOException {
+		
+		ObjectMapper mapper = new ObjectMapper();
+		AuthenticationResponseRepresentation representation = mapper.readValue(representationString,
+				AuthenticationResponseRepresentation.class);
+		return build(representation);
 	}
 
 	public void setIdentifier(Long identifier) {

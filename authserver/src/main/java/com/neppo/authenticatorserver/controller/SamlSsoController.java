@@ -1,11 +1,9 @@
-package com.neppo.authenticatorserver.saml;
+package com.neppo.authenticatorserver.controller;
 
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Date;
 import java.util.UUID;
-import java.util.zip.DataFormatException;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -27,26 +25,23 @@ import org.opensaml.xml.util.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.w3c.dom.Document;
 
-import com.neppo.authenticatorserver.model.SamlSsoConfig;
 import com.neppo.authenticatorserver.model.dao.SamlSsoConfigDAO;
 import com.neppo.authenticatorserver.model.exception.DaoException;
+import com.neppo.authenticatorserver.saml.SamlRequest;
 import com.neppo.authenticatorserver.saml.util.SAMLSignature;
 import com.neppo.authenticatorserver.saml.util.SamlUtils;
-import com.neppo.authenticatorserver.saml.util.Util;
 import com.neppo.authenticatorserver.service.AuthenticationService;
-import com.neppo.authenticatorserver.session.LoginSession;
 import com.neppo.authenticatorserver.session.LoginSessionManager;
 import com.neppo.authenticatorserver.session.Session;
 import com.neppo.authenticatorserver.session.Subject;
 
 @Controller
-public class SamlSsoService extends HttpServlet {
+public class SamlSsoController extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	private static final Logger log = Logger.getLogger(SamlSsoService.class);
+	private static final Logger log = Logger.getLogger(SamlSsoController.class);
 
 	@Autowired
 	protected AuthenticationService authenticationService;
@@ -87,9 +82,7 @@ public class SamlSsoService extends HttpServlet {
 			String redirect = errorRedirectUrl + "?erro="+e.getMessage();
 			resp.sendRedirect("./" + redirect);
 			return;
-			
 		}
-			
 		
 		if (isLoggedUser() == false) {   
 			
@@ -104,21 +97,9 @@ public class SamlSsoService extends HttpServlet {
 			if (log.isDebugEnabled()) {
 				log.debug("User session found[" + authnRequest.getID());
 			}
-/*
-			try {
-				if (authnRequest != null) {
-					final String username = (String) Subject.getLoggedUser().getUsername();  
-					final String sessionId = Subject.getSessionId(); 
-					
-					final LoginSession session = new LoginSession(sessionId, 
-							authnRequest.getIssuer().getValue(), new Date(), username, samlRelayState);
-					
-					sessionManager.addUserSession(username, session);
-				}
-			} catch (Exception e) {
-				log.error("Fail to add service provider to logout list: ",e);
-			}*/
 
+			//add here session user in session manager for single logout!
+			
 			try {
 				
 				sendResponse(req, resp, samlRelayState, authnRequest, errorMessage);
@@ -126,10 +107,8 @@ public class SamlSsoService extends HttpServlet {
 			} catch (Exception e) {
 				sendToErrorPage(resp, "Error creating SSO response", e);
 			} 
-			
 		}
 		
-
 	}
 	
 	private void authenticateUser(HttpServletRequest request, HttpServletResponse response) {
@@ -137,12 +116,9 @@ public class SamlSsoService extends HttpServlet {
 		try {
 			response.sendRedirect("./" + loginRedirectUrl);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 		return;
-		
 	}
 	
 	private boolean isLoggedUser() {
@@ -150,7 +126,6 @@ public class SamlSsoService extends HttpServlet {
 		if (Subject.getLoggedUser() == null) {   
 			return false;
 		}
-		
 		return true;
 	}
 
@@ -173,10 +148,8 @@ public class SamlSsoService extends HttpServlet {
 			response = createAuthnErrorResponse(authnRequest, errorMessage, authError);
 		}
 
-		String url = authnRequest.getAssertionConsumerServiceURL();  //Here !!!
-
+		String url = authnRequest.getAssertionConsumerServiceURL();
 		String encodedResponse = null;
-
 		Document doc = SamlUtils.asDOMDocument(response);
 		
 		//getSignature().signSAMLObject(doc.getDocumentElement());  //malopes
@@ -190,12 +163,12 @@ public class SamlSsoService extends HttpServlet {
 		PrintWriter out = resp.getWriter();
 		resp.setContentType("text/html; charset=UTF-8");
 		
+		if(relayState == null) relayState = "";
 		out.print(SamlUtils.RESPONSE_FORM.replace("${assertion.url}", url).
 				replace("${encodedResponse}", encodedResponse).
-				replace("${relayState}", ""));
+				replace("${relayState}", relayState));
 		
 		out.close();
-		
 		req.getSession().removeAttribute(SamlUtils.REQUEST);
 		req.getSession().removeAttribute(SamlUtils.RELAY_STATE);
 

@@ -20,7 +20,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.neppo.authenticatorserver.saml.SamlSsoService;
+import com.neppo.authenticatorserver.controller.SamlSsoController;
 
 
 /**
@@ -44,7 +44,7 @@ import com.neppo.authenticatorserver.saml.SamlSsoService;
  */
 public class SamlPrinter extends DefaultHandler {
 	
-	private static final Logger log = Logger.getLogger(SamlSsoService.class);
+	private static final Logger log = Logger.getLogger(SamlSsoController.class);
 	
 	/**
 	 * Convenience method to wrap pretty-printing SAX pass over existing
