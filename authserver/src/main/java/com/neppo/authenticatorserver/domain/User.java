@@ -1,4 +1,4 @@
-package com.neppo.authenticatorserver.model;
+package com.neppo.authenticatorserver.domain;
 
 public class User {
 
@@ -7,7 +7,7 @@ public class User {
 	private String firstName;
 	private String name;
 	private String email;
-	private String sureName;
+	private String surName;
 	private String password;
 	private String middleName;
 	private String lastName;
@@ -34,12 +34,12 @@ public class User {
 		this.email = email;
 	}
 
-	public String getSureName() {
-		return sureName;
+	public String getSurName() {
+		return surName;
 	}
 
-	public void setSureName(String sureName) {
-		this.sureName = sureName;
+	public void setSurName(String surName) {
+		this.surName = surName;
 	}
 
 	public String getFirstName() {

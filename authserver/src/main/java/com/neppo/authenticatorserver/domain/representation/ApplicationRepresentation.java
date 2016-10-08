@@ -1,4 +1,4 @@
-package com.neppo.authenticatorserver.model.representation;
+package com.neppo.authenticatorserver.domain.representation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,7 @@ import org.springframework.hateoas.ResourceSupport;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.neppo.authenticatorserver.model.Application;
+import com.neppo.authenticatorserver.domain.Application;
 
 public class ApplicationRepresentation extends ResourceSupport {
 

@@ -1,4 +1,4 @@
-package com.neppo.authenticatorserver.model.exception;
+package com.neppo.authenticatorserver.domain.exception;
 
 public class DaoException extends RuntimeException {
 

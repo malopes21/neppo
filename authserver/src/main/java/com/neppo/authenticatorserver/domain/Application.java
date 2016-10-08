@@ -1,4 +1,4 @@
-package com.neppo.authenticatorserver.model;
+package com.neppo.authenticatorserver.domain;
 
 public class Application {
 

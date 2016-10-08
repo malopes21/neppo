@@ -18,6 +18,9 @@
 				</h2>
 			</div>
 			<div layout="column" layout-align="center center">
+				<h5>
+				<p style="color: red" th:text="${erro}" />
+			</h5>
         <md-card layout="column" style="width: 405px;">
           <md-card-content style="padding: 40px 40px;">
           	<form action="mfa" >
@@ -26,11 +29,12 @@
             <div style="font-size: 15px;margin-bottom: 18px;">Receber um código de verificação do app <strong>Google Authenticator</strong></div>
             <md-input-container style="width: 100%;margin-bottom: 0;">
               <label>Digite o código de seis dígitos</label>
-              <input ng-model="code" />
+              <input ng-model="code" name="code" />
             </md-input-container>            
             <md-input-container style="width: 100%;">
               <md-button type="submit" class="md-raised md-primary" style="width: 100%;margin: 0;">Concluído</md-button>
             </md-input-container>
+            <input type="submit" value="VAI!!!!!" />
             </form>
           </md-card-content>
         </md-card>

@@ -1,10 +1,10 @@
-package com.neppo.authenticatorserver.model.representation;
+package com.neppo.authenticatorserver.domain.representation;
 
 import org.springframework.hateoas.ResourceSupport;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.neppo.authenticatorserver.model.User;
+import com.neppo.authenticatorserver.domain.User;
 
 public class UserRepresentation extends ResourceSupport {
 

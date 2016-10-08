@@ -1,4 +1,4 @@
-package com.neppo.authenticatorserver.model;
+package com.neppo.authenticatorserver.domain;
 
 public class AuthenticationRequest {
 
@@ -18,9 +18,19 @@ public class AuthenticationRequest {
 
 	private String sessionId;
 
+	private String issuer;
+
+	private String requestMethod;
+
+	// http-headers
+
 	private String userAgent;
 
-	private String issuer;
+	private String host;
+
+	private String date;
+
+	private String origin;
 
 	public Long getId() {
 		return id;
@@ -100,6 +110,38 @@ public class AuthenticationRequest {
 
 	public void setIssuer(String issuer) {
 		this.issuer = issuer;
+	}
+
+	public String getHost() {
+		return host;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+	}
+
+	public String getDate() {
+		return date;
+	}
+
+	public void setDate(String date) {
+		this.date = date;
+	}
+
+	public String getRequestMethod() {
+		return requestMethod;
+	}
+
+	public void setRequestMethod(String requestMethod) {
+		this.requestMethod = requestMethod;
+	}
+
+	public String getOrigin() {
+		return origin;
+	}
+
+	public void setOrigin(String origin) {
+		this.origin = origin;
 	}
 
 }

@@ -1,4 +1,4 @@
-package com.neppo.authenticatorserver.model.representation;
+package com.neppo.authenticatorserver.domain.representation;
 
 import java.util.Date;
 
@@ -7,7 +7,8 @@ import org.springframework.hateoas.ResourceSupport;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.neppo.authenticatorserver.model.Account;
+import com.neppo.authenticatorserver.domain.Account;
+import com.neppo.authenticatorserver.domain.AccountStatus;
 
 public class AccountRepresentation extends ResourceSupport {
 
@@ -81,6 +82,10 @@ public class AccountRepresentation extends ResourceSupport {
 		account.setName(representation.getName());
 		account.setDescription(representation.getDescription());
 		account.setMaster(representation.getMaster());
+		
+		if(representation.getStatus() != null) {
+			account.setStatus(AccountStatus.valueOf(representation.getStatus()));
+		}
 		
 		if (representation.getUser() != null) {
 			account.setUser(UserRepresentation.build(representation.getUser()));

@@ -1,4 +1,4 @@
-package com.neppo.authenticatorserver.model;
+package com.neppo.authenticatorserver.domain;
 
 import java.util.Date;
 
@@ -9,7 +9,7 @@ public class Account {
 	private String description;
 	private Boolean master;
 	private Date expiration;
-	private String status;
+	private AccountStatus status;
 	private String username;
 	private String password;
 	private User user;
@@ -55,11 +55,11 @@ public class Account {
 		this.expiration = expiration;
 	}
 
-	public String getStatus() {
+	public AccountStatus getStatus() {
 		return status;
 	}
 
-	public void setStatus(String status) {
+	public void setStatus(AccountStatus status) {
 		this.status = status;
 	}
 

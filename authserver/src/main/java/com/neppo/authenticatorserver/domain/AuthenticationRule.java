@@ -1,4 +1,4 @@
-package com.neppo.authenticatorserver.model;
+package com.neppo.authenticatorserver.domain;
 
 import java.util.Map;
 
@@ -11,6 +11,8 @@ public class AuthenticationRule {
 	private Map<String, Object> params;
 
 	private boolean validated = false;
+
+	private String validateError;
 
 	public AuthenticationRuleType getType() {
 		return type;
@@ -42,6 +44,14 @@ public class AuthenticationRule {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public String getValidateError() {
+		return validateError;
+	}
+
+	public void setValidateError(String validateError) {
+		this.validateError = validateError;
 	}
 
 	@Override

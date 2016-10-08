@@ -1,4 +1,4 @@
-package com.neppo.authenticatorserver.model;
+package com.neppo.authenticatorserver.domain;
 
 import java.util.List;
 
@@ -15,6 +15,10 @@ public class AuthenticationResponse {
 	private boolean sucess;
 
 	private List<AuthenticationRule> rules;
+
+	private boolean exception;
+
+	private String errorMessage;
 
 	public Long getId() {
 		return id;
@@ -62,6 +66,22 @@ public class AuthenticationResponse {
 
 	public void setRules(List<AuthenticationRule> rules) {
 		this.rules = rules;
+	}
+
+	public boolean isException() {
+		return exception;
+	}
+
+	public void setException(boolean exception) {
+		this.exception = exception;
+	}
+
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
 	}
 
 }

@@ -3,7 +3,7 @@ package com.neppo.authenticatorserver.session;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import com.neppo.authenticatorserver.model.User;
+import com.neppo.authenticatorserver.domain.User;
 
 public class Subject {
 

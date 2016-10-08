@@ -27,8 +27,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.w3c.dom.Document;
 
-import com.neppo.authenticatorserver.model.dao.SamlSsoConfigDAO;
-import com.neppo.authenticatorserver.model.exception.DaoException;
+import com.neppo.authenticatorserver.domain.exception.DaoException;
 import com.neppo.authenticatorserver.saml.SamlRequest;
 import com.neppo.authenticatorserver.saml.util.SAMLSignature;
 import com.neppo.authenticatorserver.saml.util.SamlUtils;
@@ -45,9 +44,6 @@ public class SamlSsoController extends HttpServlet {
 
 	@Autowired
 	protected AuthenticationService authenticationService;
-	
-	@Autowired
-	private SamlSsoConfigDAO samlConfigDAO;
 	
 	//protected Cache<String, String> cache;
 	
@@ -75,7 +71,7 @@ public class SamlSsoController extends HttpServlet {
 
 		try {
 			
-			SamlRequest.validate(authnRequest, samlConfigDAO);
+			SamlRequest.validate(authnRequest, authenticationService);
 			
 		} catch (Exception e) { //CATEGORIZAR TODOS OS ERROS
 			e.printStackTrace();

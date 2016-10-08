@@ -6,21 +6,21 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.opensaml.saml2.core.AuthnRequest;
 
-import com.neppo.authenticatorserver.model.SamlSsoConfig;
-import com.neppo.authenticatorserver.model.dao.SamlSsoConfigDAO;
+import com.neppo.authenticatorserver.domain.SamlSsoConfig;
 import com.neppo.authenticatorserver.saml.util.SamlUtils;
 import com.neppo.authenticatorserver.saml.util.Util;
+import com.neppo.authenticatorserver.service.AuthenticationService;
 import com.neppo.authenticatorserver.session.Session;
 
 public class SamlRequest {
 	
-	public static void validate(AuthnRequest authnRequest, SamlSsoConfigDAO samlConfigDAO) {
+	public static void validate(AuthnRequest authnRequest, AuthenticationService authenticationService) {
 		
 		if (authnRequest == null) {
 			throw new RuntimeException("Invalid SAML Request.");
 		} 
 		
-		SamlSsoConfig samlConfig = samlConfigDAO.findByIssuer(authnRequest.getIssuer().getValue());
+		SamlSsoConfig samlConfig = authenticationService.findSamlConfig(authnRequest.getIssuer().getValue());
 		
 		if(!authnRequest.getIssuer().getValue().equals(samlConfig.getIssuer()))
 			throw new RuntimeException("Invalid Issuer.");
