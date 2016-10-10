@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.neppo.authenticatorserver.domain.AuthenticationResponse;
 import com.neppo.authenticatorserver.domain.User;
+import com.neppo.authenticatorserver.mfa.otp.OTPProvider;
 import com.neppo.authenticatorserver.session.Subject;
 
 @Controller
@@ -30,8 +31,11 @@ public class MfaController {
 		try {
 		
 			String sCode = req.getParameter("code");
-			Integer code = Integer.parseInt(sCode);
-			if(!code.equals(120)) {
+			OTPProvider otp = new OTPProvider();
+			String key = otp.getNextCode(authnResponse.getAccount().getUser().getOtpSecret());
+			
+			if(!key.equals(sCode)) {
+				
 				model.addAttribute("erro", "Codigo incorreto! Tente novamente!");
 				return "mfa";
 			}
@@ -44,11 +48,11 @@ public class MfaController {
 
 		//MFA VALIDO E COM SESSAO - LOGANDO!
 		
-		Boolean remember = (Boolean) req.getSession().getAttribute(String.valueOf(LoginController.REMEMBER_TIME));
+		Boolean remember = (Boolean) req.getSession().getAttribute(String.valueOf(LogoutController.REMEMBER_TIME));
 		if(remember != null && remember) {
-			Cookie sessionIdCookie = LoginController.getSessionIdCookie(req.getCookies());
+			Cookie sessionIdCookie = LogoutController.getSessionIdCookie(req.getCookies());
 			if(sessionIdCookie != null) {
-				sessionIdCookie.setMaxAge(LoginController.REMEMBER_TIME);
+				sessionIdCookie.setMaxAge(LogoutController.REMEMBER_TIME);
 				resp.addCookie(sessionIdCookie);
 			}
 		}

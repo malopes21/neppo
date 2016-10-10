@@ -6,14 +6,17 @@ import java.util.List;
 
 import org.springframework.hateoas.ResourceSupport;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.neppo.authenticatorserver.domain.AuthenticationResponse;
 import com.neppo.authenticatorserver.domain.AuthenticationRule;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AuthenticationResponseRepresentation extends ResourceSupport {
 
 	@JsonInclude(Include.NON_NULL)
@@ -118,6 +121,7 @@ public class AuthenticationResponseRepresentation extends ResourceSupport {
 			throws JsonParseException, JsonMappingException, IOException {
 
 		ObjectMapper mapper = new ObjectMapper();
+		mapper = mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
 		AuthenticationResponseRepresentation representation = mapper.readValue(representationString,
 				AuthenticationResponseRepresentation.class);
 		return build(representation);

@@ -5,11 +5,13 @@ import java.util.Date;
 import org.springframework.hateoas.ResourceSupport;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.neppo.authenticatorserver.domain.Account;
 import com.neppo.authenticatorserver.domain.AccountStatus;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AccountRepresentation extends ResourceSupport {
 
 	@JsonInclude(Include.NON_NULL)

@@ -13,7 +13,8 @@ public class User {
 	private String lastName;
 	private String status;
 	private String displayName;
-	
+	private String otpSecret;
+
 	public String getUsername() {
 		return username;
 	}
@@ -100,6 +101,14 @@ public class User {
 
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
+	}
+
+	public String getOtpSecret() {
+		return otpSecret;
+	}
+
+	public void setOtpSecret(String otpSecret) {
+		this.otpSecret = otpSecret;
 	}
 
 }

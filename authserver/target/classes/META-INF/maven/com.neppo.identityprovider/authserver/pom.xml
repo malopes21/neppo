@@ -31,6 +31,16 @@
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
 		<dependency>
@@ -44,7 +54,6 @@
 			<scope>test</scope>
 		</dependency>
 
-
 		<!-- OLDS -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -57,16 +66,16 @@
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
 		</dependency>
-		<!-- <dependency> <groupId>org.springframework</groupId> <artifactId>spring-core</artifactId> 
-			</dependency> <dependency> <groupId>org.springframework</groupId> <artifactId>spring-beans</artifactId> 
-			</dependency> <dependency> <groupId>org.springframework</groupId> <artifactId>spring-context</artifactId> 
-			</dependency> <dependency> <groupId>org.springframework</groupId> <artifactId>spring-web</artifactId> 
+		<!-- <dependency> <groupId>org.springframework</groupId> <artifactId>spring-core</artifactId>
+			</dependency> <dependency> <groupId>org.springframework</groupId> <artifactId>spring-beans</artifactId>
+			</dependency> <dependency> <groupId>org.springframework</groupId> <artifactId>spring-context</artifactId>
+			</dependency> <dependency> <groupId>org.springframework</groupId> <artifactId>spring-web</artifactId>
 			</dependency> -->
 		<!-- Shiro -->
-		<!-- <dependency> <groupId>org.apache.shiro</groupId> <artifactId>shiro-web</artifactId> 
-			<version>${shiro.version}</version> <exclusions> <exclusion> <groupId>org.slf4j</groupId> 
-			<artifactId>slf4j-api</artifactId> </exclusion> </exclusions> </dependency> 
-			<dependency> <groupId>org.apache.shiro</groupId> <artifactId>shiro-spring</artifactId> 
+		<!-- <dependency> <groupId>org.apache.shiro</groupId> <artifactId>shiro-web</artifactId>
+			<version>${shiro.version}</version> <exclusions> <exclusion> <groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId> </exclusion> </exclusions> </dependency>
+			<dependency> <groupId>org.apache.shiro</groupId> <artifactId>shiro-spring</artifactId>
 			<version>${shiro.version}</version> </dependency> -->
 
 		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
@@ -100,31 +109,6 @@
 			<version>1.0.2.RELEASE</version>
 		</dependency>
 
-		<!-- <dependency> <groupId>org.openid4java</groupId> <artifactId>openid4java-consumer</artifactId> 
-			<version>0.9.5</version> </dependency> -->
-
-		<!-- Jersey OAuth Server -->
-		<!-- <dependency> <groupId>com.sun.jersey.contribs.jersey-oauth</groupId> 
-			<artifactId>oauth-server</artifactId> <version>1.4</version> </dependency> 
-			<dependency> <groupId>org.scala-lang</groupId> <artifactId>scala-library</artifactId> 
-			<version>2.11.0</version> </dependency> <dependency> <groupId>org.apache.logging.log4j</groupId> 
-			<artifactId>log4j-api</artifactId> </dependency> <dependency> <groupId>org.springframework.boot</groupId> 
-			<artifactId>spring-boot-starter-data-rest</artifactId> </dependency> -->
-		<dependency>
-			<groupId>org.scala-lang</groupId>
-			<artifactId>scala-library</artifactId>
-			<version>2.11.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-core</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-core</artifactId>
-			<version>1.0.0</version>
-		</dependency>
 	</dependencies>
 
 	<build>

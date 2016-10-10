@@ -28,6 +28,7 @@ import com.neppo.authenticatorserver.domain.exception.DaoException;
 import com.neppo.authenticatorserver.saml.util.SAMLSignature;
 import com.neppo.authenticatorserver.saml.util.SamlUtils;
 import com.neppo.authenticatorserver.service.AuthenticationService;
+import com.neppo.authenticatorserver.service.exception.AccountNotFoundException;
 import com.neppo.authenticatorserver.service.exception.AccountStatusNotValidException;
 import com.neppo.authenticatorserver.service.exception.AuthenticationPolicyException;
 import com.neppo.authenticatorserver.service.exception.CredentialsNotValidException;
@@ -37,7 +38,7 @@ import com.neppo.authenticatorserver.session.Session;
 import com.neppo.authenticatorserver.session.Subject;
 
 @Controller
-public class LoginController2 {
+public class LogoutController {
 
 	@Autowired
 	protected AuthenticationService authenticationService;
@@ -50,7 +51,7 @@ public class LoginController2 {
 
 	protected SAMLSignature signature;
 
-	@RequestMapping("/login-form")
+	@RequestMapping("/login-form-old")
 	public String loginForm(HttpServletRequest req, HttpServletResponse resp,
 			@RequestParam(value = "erro", required = false, defaultValue = "") String erro, Model model)
 			throws Exception {
@@ -59,7 +60,7 @@ public class LoginController2 {
 		return "login";
 	}
 
-	@RequestMapping("/login")
+	@RequestMapping("/login-old")
 	public String login(HttpServletRequest req, HttpServletResponse resp,
 			@RequestParam(value = "erro", required = false, defaultValue = "") String erro, Model model)
 			throws Exception {
@@ -76,52 +77,49 @@ public class LoginController2 {
 
 		} catch (Exception ex) {
 
-			ex.printStackTrace();
-			model.addAttribute("erro", "Erro: não foi possível criar a requisição para autenticação!");
+			model.addAttribute("erro", "Erro 1: " + ex.getMessage());
 			return "login";
 		}
 
 		AuthenticationResponse authnResponse = null;
 		try {
 
-			authnResponse = authenticationService.authenticateUser2(authnRequest);
+			authnResponse = authenticationService.authenticateUser(authnRequest);
 
 		} catch (AccountStatusNotValidException ex) {
 
-			ex.printStackTrace();
-			model.addAttribute("erro", ex.getMessage());
+			model.addAttribute("erro", "Erro 0: " + ex.getMessage());
 			return "login";
 
 		} catch (JsonParseException ex) {
 
-			ex.printStackTrace();
-			model.addAttribute("erro", ex.getMessage());
+			model.addAttribute("erro", "Erro 1: " + ex.getMessage());
 			return "login";
 
 		} catch (CredentialsNotValidException ex) {
 
-			ex.printStackTrace();
 			String retorno = validateThrottling(req, ex.getAuthnResponse());
-			String errorMsg = retorno == null ? ex.getMessage() : retorno;
-			model.addAttribute("erro", errorMsg);
+			model.addAttribute("erro", "Erro 2: " + (retorno == null ? ex.getMessage() : retorno));
 			return "login";
 
 		} catch (AuthenticationPolicyException ex) {
 
-			ex.printStackTrace();
-			model.addAttribute("erro", ex.getMessage());
+			model.addAttribute("erro", "Erro 3: " + ex.getMessage());
+			return "login";
+
+		} catch (AccountNotFoundException ex) {
+
+			model.addAttribute("erro", "Erro 4: " + ex.getMessage());
 			return "login";
 
 		} catch (DaoException ex) {
 
-			ex.printStackTrace();
-			model.addAttribute("erro", ex.getMessage());
+			model.addAttribute("erro", "Erro 5: " + ex.getMessage());
 			return "login";
 
 		} catch (Exception ex) {
 
-			ex.printStackTrace();
-			model.addAttribute("erro", "Ops, algum problema no processo de autenticação.");
+			model.addAttribute("erro", "Erro 6: " + ex.getMessage());
 			return "login";
 		}
 
@@ -133,9 +131,9 @@ public class LoginController2 {
 
 		if (authnResponse.isSucess()) {
 
-			if (haveMFA(authnResponse.getAuthnPolicy().getRulesList())) {
+			if (haveMFA(authnResponse.getRules())) {
 
-				if (haveRemember(authnResponse.getAuthnPolicy().getRulesList())) {
+				if (haveRemember(authnResponse.getRules())) {
 					req.getSession().setAttribute(String.valueOf(REMEMBER_TIME), true);
 				}
 				req.getSession().setAttribute("authnResponse", authnResponse);           //cookies?
@@ -150,7 +148,6 @@ public class LoginController2 {
 						resp.addCookie(sessionIdCookie);
 					}
 				}
-				
 				User user = new User();
 				user.setUsername(authnResponse.getAccount().getUsername());
 				user.setEmail(authnResponse.getAccount().getDescription());
@@ -174,7 +171,7 @@ public class LoginController2 {
 
 		try {
 
-			AuthenticationRule throttlingRule = getThrottlingRule(authnResponse.getAuthnPolicy().getRulesList());
+			AuthenticationRule throttlingRule = getThrottlingRule(authnResponse.getRules());
 
 			if (throttlingRule != null) {
 
@@ -186,12 +183,10 @@ public class LoginController2 {
 					authnResponse.getAccount().setStatus(AccountStatus.DEACTIVATED);
 					authenticationService.updateAccountStatus(authnResponse.getAccount().getId(),
 							AccountStatus.DEACTIVATED.toString());
-					req.getSession().setAttribute(THROTTLING_COUNT, 0);
-					return "Conta DESATIVADA por segurança: excesso de tentativas de login!";
+					return "Conta DESATIVADA!";
 				}
 			}
 		} catch (Exception ex) {
-			
 			ex.printStackTrace();
 		}
 		

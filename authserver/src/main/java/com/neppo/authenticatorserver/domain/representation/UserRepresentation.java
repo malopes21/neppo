@@ -2,10 +2,12 @@ package com.neppo.authenticatorserver.domain.representation;
 
 import org.springframework.hateoas.ResourceSupport;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.neppo.authenticatorserver.domain.User;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserRepresentation extends ResourceSupport {
 
 	@JsonInclude(Include.NON_NULL)
@@ -29,6 +31,9 @@ public class UserRepresentation extends ResourceSupport {
 	@JsonInclude(Include.NON_NULL)
 	private String displayName;
 
+	@JsonInclude(Include.NON_NULL)
+	private String otpSecret;
+
 	public UserRepresentation() {
 	}
 
@@ -41,7 +46,7 @@ public class UserRepresentation extends ResourceSupport {
 	}
 
 	public UserRepresentation(User user, Boolean expand) {
-		
+
 		this.identifier = user.getId();
 		this.status = user.getStatus().toString();
 		this.displayName = user.getDisplayName();
@@ -49,6 +54,7 @@ public class UserRepresentation extends ResourceSupport {
 		this.firstName = user.getFirstName();
 		this.lastName = user.getLastName();
 		this.middleName = user.getMiddleName();
+		this.otpSecret = user.getOtpSecret();
 	}
 
 	public static User build(UserRepresentation representation) {
@@ -60,6 +66,7 @@ public class UserRepresentation extends ResourceSupport {
 		user.setLastName(representation.getLastName());
 		user.setMiddleName(representation.getMiddleName());
 		user.setId(representation.getIdentifier());
+		user.setOtpSecret(representation.getOtpSecret());
 
 		return user;
 	}
@@ -118,6 +125,14 @@ public class UserRepresentation extends ResourceSupport {
 
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
+	}
+
+	public String getOtpSecret() {
+		return otpSecret;
+	}
+
+	public void setOtpSecret(String otpSecret) {
+		this.otpSecret = otpSecret;
 	}
 
 }
