@@ -20,6 +20,14 @@ public class AuthenticationResponse {
 
 	private String errorMessage;
 
+	// refactoring
+
+	private boolean accountExist;
+
+	private boolean accountValidated;
+
+	private AuthenticationPolicy authnPolicy;
+
 	public Long getId() {
 		return id;
 	}
@@ -82,6 +90,30 @@ public class AuthenticationResponse {
 
 	public void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
+	}
+
+	public boolean isAccountExist() {
+		return accountExist;
+	}
+
+	public void setAccountExist(boolean accountExist) {
+		this.accountExist = accountExist;
+	}
+
+	public boolean isAccountValidated() {
+		return accountValidated;
+	}
+
+	public void setAccountValidated(boolean accountValidated) {
+		this.accountValidated = accountValidated;
+	}
+
+	public AuthenticationPolicy getAuthnPolicy() {
+		return authnPolicy;
+	}
+
+	public void setAuthnPolicy(AuthenticationPolicy authnPolicy) {
+		this.authnPolicy = authnPolicy;
 	}
 
 }

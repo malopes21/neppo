@@ -55,7 +55,7 @@ public class AccountRepresentation extends ResourceSupport {
 		this.identifier = account.getId();
 		this.name = account.getName();
 		this.description = account.getDescription();
-		this.master = account.getMaster();
+		this.master = account.isMaster();
 		this.username = account.getUsername();
 		
 		if (account.getUser() != null) {

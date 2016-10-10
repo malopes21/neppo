@@ -40,6 +40,15 @@ public class AuthenticationResponseRepresentation extends ResourceSupport {
 	@JsonInclude(Include.NON_NULL)
 	private String errorMessage;
 
+	@JsonInclude(Include.NON_NULL)
+	private boolean accountExist;
+
+	@JsonInclude(Include.NON_NULL)
+	private boolean accountValidated;
+
+	@JsonInclude(Include.NON_NULL)
+	private AuthenticationPolicyRepresentation authnPolicy;
+
 	public Long getIdentifier() {
 		return identifier;
 	}
@@ -56,6 +65,12 @@ public class AuthenticationResponseRepresentation extends ResourceSupport {
 		this.success = authnData.isSucess();
 		this.exception = authnData.isException();
 		this.errorMessage = authnData.getErrorMessage();
+		this.accountExist = authnData.isAccountExist();
+		this.accountValidated = authnData.isAccountValidated();
+		
+		if(authnData.getAuthnPolicy() != null) {
+			this.authnPolicy = new AuthenticationPolicyRepresentation(authnData.getAuthnPolicy());
+		}
 
 		if (authnData.getAccount() != null) {
 			this.account = new AccountRepresentation(authnData.getAccount());
@@ -78,6 +93,12 @@ public class AuthenticationResponseRepresentation extends ResourceSupport {
 		authnData.setSucess(representation.isSuccess());
 		authnData.setException(representation.isException());
 		authnData.setErrorMessage(representation.getErrorMessage());
+		authnData.setAccountExist(representation.isAccountExist());
+		authnData.setAccountValidated(representation.isAccountValidated());
+
+		if(representation.getAuthnPolicy() != null) {
+			authnData.setAuthnPolicy(AuthenticationPolicyRepresentation.build(representation.getAuthnPolicy()));
+		}
 
 		if (representation.getAccount() != null) {
 			authnData.setAccount(AccountRepresentation.build(representation.getAccount()));
@@ -160,6 +181,30 @@ public class AuthenticationResponseRepresentation extends ResourceSupport {
 
 	public void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
+	}
+
+	public boolean isAccountExist() {
+		return accountExist;
+	}
+
+	public void setAccountExist(boolean accountExist) {
+		this.accountExist = accountExist;
+	}
+
+	public boolean isAccountValidated() {
+		return accountValidated;
+	}
+
+	public void setAccountValidated(boolean accountValidated) {
+		this.accountValidated = accountValidated;
+	}
+
+	public AuthenticationPolicyRepresentation getAuthnPolicy() {
+		return authnPolicy;
+	}
+
+	public void setAuthnPolicy(AuthenticationPolicyRepresentation authnPolicy) {
+		this.authnPolicy = authnPolicy;
 	}
 
 }

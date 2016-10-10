@@ -1,19 +1,31 @@
 package com.neppo.authenticatorserver.domain;
 
 import java.util.Date;
+import java.util.List;
 
 public class Account {
 
 	private Long id;
+
 	private String name;
+
 	private String description;
+
 	private Boolean master;
+
 	private Date expiration;
+
 	private AccountStatus status;
+
 	private String username;
+
 	private String password;
+
 	private User user;
+
 	private Application application;
+
+	private List<AccountDevice> devices;
 
 	public Long getId() {
 		return id;
@@ -39,7 +51,7 @@ public class Account {
 		this.description = description;
 	}
 
-	public Boolean getMaster() {
+	public Boolean isMaster() {
 		return master;
 	}
 
@@ -94,5 +106,14 @@ public class Account {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
+	public List<AccountDevice> getDevices() {
+		return devices;
+	}
+
+	public void setDevices(List<AccountDevice> devices) {
+		this.devices = devices;
+	}
+
 
 }
