@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class ErrorController {
 
+	
     @RequestMapping("/ops")
     public String errorPage(@RequestParam(value="erro", required=false, defaultValue="") String erro, Model model) {
         model.addAttribute("erro", erro);
