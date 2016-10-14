@@ -1,7 +1,6 @@
 package com.neppo.authenticatorserver.controller;
 
 import java.io.IOException;
-import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -17,11 +16,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.neppo.authenticatorserver.domain.AccountStatus;
 import com.neppo.authenticatorserver.domain.AuthenticationRequest;
 import com.neppo.authenticatorserver.domain.AuthenticationResponse;
-import com.neppo.authenticatorserver.domain.AuthenticationRule;
-import com.neppo.authenticatorserver.domain.AuthenticationRuleType;
 import com.neppo.authenticatorserver.domain.SamlSsoConfig;
 import com.neppo.authenticatorserver.domain.User;
 import com.neppo.authenticatorserver.domain.exception.DaoException;
@@ -32,7 +28,6 @@ import com.neppo.authenticatorserver.service.exception.AccountStatusNotValidExce
 import com.neppo.authenticatorserver.service.exception.AuthenticationPolicyException;
 import com.neppo.authenticatorserver.service.exception.CredentialsNotValidException;
 import com.neppo.authenticatorserver.service.exception.JsonParseException;
-import com.neppo.authenticatorserver.session.LoginSessionManager;
 import com.neppo.authenticatorserver.session.Session;
 import com.neppo.authenticatorserver.session.Subject;
 
@@ -41,8 +36,7 @@ public class LoginController {
 
 	@Autowired
 	protected AuthenticationService authenticationService;
-	protected LoginSessionManager sessionManager;
-
+	
 	public static final String LOGIN_USERNAME = "user.email";
 	public static final String LOGIN_PASSWORD = "user.password";
 	public static final String THROTTLING_COUNT = "THROTTLING_COUNT";
@@ -63,11 +57,8 @@ public class LoginController {
 	public String login(HttpServletRequest req, HttpServletResponse resp,
 			@RequestParam(value = "erro", required = false, defaultValue = "") String erro, Model model)
 			throws Exception {
-
-		Integer throttlingCount = (Integer) req.getSession().getAttribute(THROTTLING_COUNT);
-		if(throttlingCount == null) {
-			req.getSession().setAttribute(THROTTLING_COUNT, 0);
-		}
+		
+		setThrottlingCountAttribute();
 
 		AuthenticationRequest authnRequest = null;
 		try {
@@ -84,7 +75,7 @@ public class LoginController {
 		AuthenticationResponse authnResponse = null;
 		try {
 
-			authnResponse = authenticationService.authenticateUser2(authnRequest);
+			authnResponse = authenticationService.authenticateUser(authnRequest);
 
 		} catch (AccountStatusNotValidException ex) {
 
@@ -101,7 +92,7 @@ public class LoginController {
 		} catch (CredentialsNotValidException ex) {
 
 			ex.printStackTrace();
-			String retorno = validateThrottling(req, ex.getAuthnResponse());
+			String retorno = authenticationService.validateThrottling(req, ex.getAuthnResponse());
 			String errorMsg = retorno == null ? ex.getMessage() : retorno;
 			model.addAttribute("erro", errorMsg);
 			return "login";
@@ -128,40 +119,40 @@ public class LoginController {
 		return processLogin(req, resp, model, authnResponse);
 	}
 	
-	private String processLogin(HttpServletRequest req, HttpServletResponse resp, Model model,
-			AuthenticationResponse authnResponse) throws ServletException, IOException {
+	
+	private void setThrottlingCountAttribute() {
+		
+		Integer throttlingCount = (Integer) Session.getAttribute(THROTTLING_COUNT);
+		if(throttlingCount == null) {
+			Session.addAttribute(THROTTLING_COUNT, 0);
+		}
+	}
+
+	
+	private String processLogin(HttpServletRequest req, HttpServletResponse resp, Model model, AuthenticationResponse authnResponse) 
+			throws ServletException, IOException {
 
 		if (authnResponse.isSucess()) {
 
-			if (haveMFA(authnResponse.getAuthnPolicy().getRulesList())) {
+			if (authenticationService.haveMFA(authnResponse.getAuthnPolicy().getRulesList())) {
 
-				if (haveRemember(authnResponse.getAuthnPolicy().getRulesList())) {
-					req.getSession().setAttribute(String.valueOf(REMEMBER_TIME), true);
-				}
-				req.getSession().setAttribute("authnResponse", authnResponse);           //cookies?
+				setHaveRememberAttribute(authnResponse);
+				Session.addAttribute("authnResponse", authnResponse);
 				return "mfa";
 
 			} else {
 
-				if (haveRemember(authnResponse.getRules())) {
-					Cookie sessionIdCookie = getSessionIdCookie(req.getCookies());
-					if (sessionIdCookie != null) {
-						sessionIdCookie.setMaxAge(REMEMBER_TIME);
-						resp.addCookie(sessionIdCookie);
-					}
+				if (authenticationService.haveRemember(authnResponse.getAuthnPolicy().getRulesList())) {
+					setCookieSessionId(req, resp);
 				}
 				
-				User user = new User();
-				user.setUsername(authnResponse.getAccount().getUsername());
-				user.setEmail(authnResponse.getAccount().getDescription());
-				user.setFirstName(authnResponse.getAccount().getName());
-				user.setName(authnResponse.getAccount().getName());
-				user.setSurName(authnResponse.getAccount().getName());
+				User user = authenticationService.createUser(authnResponse);
 				Subject.authenticate(user);
 
 				req.getRequestDispatcher("/sso").forward(req, resp);
 				return null;
 			}
+			
 		} else {
 
 			String error = authenticationService.createErrorMessage(authnResponse).toString();
@@ -170,85 +161,26 @@ public class LoginController {
 		}
 	}
 
-	private String validateThrottling(HttpServletRequest req, AuthenticationResponse authnResponse) {
 
-		try {
 
-			AuthenticationRule throttlingRule = getThrottlingRule(authnResponse.getAuthnPolicy().getRulesList());
-
-			if (throttlingRule != null) {
-
-				int throttlingCount = (Integer) req.getSession().getAttribute(THROTTLING_COUNT) + 1;
-				req.getSession().setAttribute(THROTTLING_COUNT, throttlingCount);
-
-				int attempts = (Integer) throttlingRule.getParams().get("attempts");
-				if (throttlingCount > attempts) {
-					authnResponse.getAccount().setStatus(AccountStatus.DEACTIVATED);
-					authenticationService.updateAccountStatus(authnResponse.getAccount().getId(),
-							AccountStatus.DEACTIVATED.toString());
-					req.getSession().setAttribute(THROTTLING_COUNT, 0);
-					return "Conta DESATIVADA por segurança: excesso de tentativas de login!";
-				}
-			}
-		} catch (Exception ex) {
-			
-			ex.printStackTrace();
-		}
+	private void setHaveRememberAttribute( AuthenticationResponse authnResponse) {
 		
-		return null;
+		if (authenticationService.haveRemember(authnResponse.getAuthnPolicy().getRulesList())) {
+			Session.addAttribute(String.valueOf(REMEMBER_TIME), true);
+		}
 	}
 
-	private AuthenticationRule getThrottlingRule(List<AuthenticationRule> rules) {
 
-		if (rules == null || rules.isEmpty()) {
-			return null;
+	private void setCookieSessionId(HttpServletRequest req, HttpServletResponse resp) {
+		
+		Cookie sessionIdCookie = authenticationService.getSessionIdCookie(req.getCookies());
+		if (sessionIdCookie != null) {
+			sessionIdCookie.setMaxAge(REMEMBER_TIME);
+			resp.addCookie(sessionIdCookie);
 		}
-
-		for (AuthenticationRule rule : rules) {
-			if (rule.getType() == AuthenticationRuleType.CHECK_THROTTLING) {
-				return rule;
-			}
-		}
-		return null;
 	}
 	
-	public static Cookie getSessionIdCookie(Cookie[] cookies) {
-		for (Cookie cookie : cookies) {
-			if (cookie.getName().equals("JSESSIONID")) {
-				return cookie;
-			}
-		}
-		return null;
-	}
-
-	private boolean haveRemember(List<AuthenticationRule> rules) {
-
-		if (rules == null || rules.isEmpty()) {
-			return false;
-		}
-
-		for (AuthenticationRule rule : rules) {
-			if (rule.getType() == AuthenticationRuleType.CHECK_REMEMBER) {
-				return rule.isValidated();
-			}
-		}
-		return false;
-	}
-
-	private boolean haveMFA(List<AuthenticationRule> rules) {
-
-		if (rules == null || rules.isEmpty()) {
-			return false;
-		}
-
-		for (AuthenticationRule rule : rules) {
-			if (rule.getType() == AuthenticationRuleType.CHECK_MFA) {
-				return rule.isValidated();
-			}
-		}
-		return false;
-	}
-
+	
 	private AuthenticationRequest createAuthenticationRequest(HttpServletRequest req, HttpServletResponse resp) {
 
 		AuthnRequest samlAuthnRequest = (AuthnRequest) Session.getAttribute(SamlUtils.REQUEST);

@@ -4,11 +4,13 @@ import java.util.Map;
 
 import org.springframework.hateoas.ResourceSupport;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.neppo.authenticatorserver.domain.AuthenticationRule;
 import com.neppo.authenticatorserver.domain.AuthenticationRuleType;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AuthenticationRuleRepresentation extends ResourceSupport {
 
 	@JsonInclude(Include.NON_NULL)

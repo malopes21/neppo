@@ -2,12 +2,14 @@ package com.neppo.authenticatorserver.domain.representation;
 
 import org.springframework.hateoas.ResourceSupport;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.neppo.authenticatorserver.domain.AuthenticationRequest;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AuthenticationRequestRepresentation extends ResourceSupport {
 
 	@JsonInclude(Include.NON_NULL)

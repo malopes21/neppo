@@ -1,9 +1,9 @@
 package com.neppo.authenticatorserver.controller;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,11 +11,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.neppo.authenticatorserver.domain.AuthenticationResponse;
 import com.neppo.authenticatorserver.domain.User;
-import com.neppo.authenticatorserver.mfa.otp.OTPProvider;
+import com.neppo.authenticatorserver.service.AuthenticationService;
+import com.neppo.authenticatorserver.service.exception.OtpInvalidTokenException;
 import com.neppo.authenticatorserver.session.Subject;
 
 @Controller
 public class MfaController {
+	
+	@Autowired
+	protected AuthenticationService authenticationService;
 
 	@RequestMapping("/mfa")
 	public String mfaForm(HttpServletRequest req, HttpServletResponse resp,
@@ -27,46 +31,32 @@ public class MfaController {
 			return "login";
 		}
 		
-		//VALIDAR MFA
 		try {
 		
-			String sCode = req.getParameter("code");
-			OTPProvider otp = new OTPProvider();
-			String key = otp.getNextCode(authnResponse.getAccount().getUser().getOtpSecret());
-			
-			if(!key.equals(sCode)) {
+			if(!authenticationService.validateMFA(req)) {
 				
 				model.addAttribute("erro", "Codigo incorreto! Tente novamente!");
 				return "mfa";
 			}
 			
-		}catch(Exception ex) {
+		} catch(OtpInvalidTokenException ex) {
 			
-			model.addAttribute("erro", "Valor inválido! Tente novamente!");
+			model.addAttribute("erro", ex.getMessage());
+			return "mfa";
+		} catch(Exception ex) {
+			
+			model.addAttribute("erro", "OTP não configurado para esse usuário!");
 			return "mfa";
 		}
-
-		//MFA VALIDO E COM SESSAO - LOGANDO!
 		
-		Boolean remember = (Boolean) req.getSession().getAttribute(String.valueOf(LogoutController.REMEMBER_TIME));
-		if(remember != null && remember) {
-			Cookie sessionIdCookie = LogoutController.getSessionIdCookie(req.getCookies());
-			if(sessionIdCookie != null) {
-				sessionIdCookie.setMaxAge(LogoutController.REMEMBER_TIME);
-				resp.addCookie(sessionIdCookie);
-			}
-		}
+		authenticationService.validateRemember(req, resp);
 		
-		User user = new User();
-		user.setUsername(authnResponse.getAccount().getUsername());
-		user.setEmail(authnResponse.getAccount().getDescription());
-		user.setFirstName(authnResponse.getAccount().getName());
-		user.setName(authnResponse.getAccount().getName());
-		user.setSurName(authnResponse.getAccount().getName());
+		User user = authenticationService.createUser(authnResponse);
 		Subject.authenticate(user);
 		
 		req.getRequestDispatcher("/sso").forward(req, resp);
 		return null;
 	}
+	
 
 }

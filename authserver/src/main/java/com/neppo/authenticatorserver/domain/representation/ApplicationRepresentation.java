@@ -5,10 +5,12 @@ import java.util.List;
 
 import org.springframework.hateoas.ResourceSupport;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.neppo.authenticatorserver.domain.Application;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ApplicationRepresentation extends ResourceSupport {
 
 	@JsonInclude(Include.NON_NULL)
