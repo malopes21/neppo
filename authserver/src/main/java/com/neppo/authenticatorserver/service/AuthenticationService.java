@@ -495,13 +495,14 @@ public class AuthenticationService {
 	
 	public User createUser(AuthenticationResponse authnResponse) {
 		
-		User user = new User();
+		/*User user = new User();
 		user.setUsername(authnResponse.getAccount().getUsername());
 		user.setEmail(authnResponse.getAccount().getDescription());
 		user.setFirstName(authnResponse.getAccount().getName());
 		user.setName(authnResponse.getAccount().getName());
-		user.setSurName(authnResponse.getAccount().getName());
-		return user;
+		return user;*/
+		
+		return authnResponse.getAccount().getUser();
 	}
 
 	

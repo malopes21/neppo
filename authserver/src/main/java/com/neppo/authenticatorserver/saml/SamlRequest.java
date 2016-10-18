@@ -33,17 +33,7 @@ public class SamlRequest {
 		}
 		
 	}
-	
-	public static AuthnRequest build(HttpServletRequest req) {
-		
-		AuthnRequest request = (AuthnRequest) Session.getAttribute(SamlUtils.REQUEST);
-		
-		if(request != null)
-			return request;
-		
-		String stringSaml = parseSaml(req); 
-		return authnRequestBuilder(stringSaml);
-	}
+
 
 	private static String parseSaml(HttpServletRequest req) {
 		
@@ -75,7 +65,20 @@ public class SamlRequest {
 		return localSamlReq;
 	}
 	
-	private static AuthnRequest authnRequestBuilder(String samlReq) {
+	
+	public static AuthnRequest build(HttpServletRequest req) {
+		
+		AuthnRequest request = (AuthnRequest) Session.getAttribute(SamlUtils.REQUEST);
+		
+		if(request != null)
+			return request;
+		
+		String stringSaml = parseSaml(req); 
+		return build(stringSaml);
+	}
+	
+	
+	private static AuthnRequest build(String samlReq) {
 
 		AuthnRequest authnRequest = null;
 

@@ -1,6 +1,7 @@
 package com.neppo.authenticatorserver.controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -8,8 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.opensaml.saml2.core.AuthnRequest;
-//import org.apache.shiro.cache.Cache;
-//import org.apache.shiro.web.session.HttpServletSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.neppo.authenticatorserver.domain.AuthenticationRequest;
 import com.neppo.authenticatorserver.domain.AuthenticationResponse;
+import com.neppo.authenticatorserver.domain.AuthenticationRule;
 import com.neppo.authenticatorserver.domain.SamlSsoConfig;
 import com.neppo.authenticatorserver.domain.User;
 import com.neppo.authenticatorserver.domain.exception.DaoException;
@@ -132,9 +132,10 @@ public class LoginController {
 	private String processLogin(HttpServletRequest req, HttpServletResponse resp, Model model, AuthenticationResponse authnResponse) 
 			throws ServletException, IOException {
 
+		List<AuthenticationRule> rules = authnResponse.getAuthnPolicy().getRulesList();
 		if (authnResponse.isSucess()) {
-
-			if (authenticationService.haveMFA(authnResponse.getAuthnPolicy().getRulesList())) {
+			
+			if (authenticationService.haveMFA(rules)) {
 
 				setHaveRememberAttribute(authnResponse);
 				Session.addAttribute("authnResponse", authnResponse);
@@ -142,7 +143,7 @@ public class LoginController {
 
 			} else {
 
-				if (authenticationService.haveRemember(authnResponse.getAuthnPolicy().getRulesList())) {
+				if (authenticationService.haveRemember(rules)) {
 					setCookieSessionId(req, resp);
 				}
 				
@@ -165,7 +166,8 @@ public class LoginController {
 
 	private void setHaveRememberAttribute( AuthenticationResponse authnResponse) {
 		
-		if (authenticationService.haveRemember(authnResponse.getAuthnPolicy().getRulesList())) {
+		List<AuthenticationRule> rules = authnResponse.getAuthnPolicy().getRulesList();
+		if (authenticationService.haveRemember(rules)) {
 			Session.addAttribute(String.valueOf(REMEMBER_TIME), true);
 		}
 	}

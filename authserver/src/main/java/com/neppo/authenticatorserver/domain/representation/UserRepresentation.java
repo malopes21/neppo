@@ -1,15 +1,21 @@
 package com.neppo.authenticatorserver.domain.representation;
 
+import java.util.Date;
+import java.util.List;
+
 import org.springframework.hateoas.ResourceSupport;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.neppo.authenticatorserver.domain.User;
 
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserRepresentation extends ResourceSupport {
 
+	
 	@JsonInclude(Include.NON_NULL)
 	private Long identifier;
 
@@ -32,7 +38,57 @@ public class UserRepresentation extends ResourceSupport {
 	private String displayName;
 
 	@JsonInclude(Include.NON_NULL)
+	//@JsonFormat(pattern = "dd/MM/yyyy")
+	private Date effectiveDate;
+
+	@JsonInclude(Include.NON_NULL)
+	private String personalEmail;
+
+	@JsonInclude(Include.NON_NULL)
+	//@JsonFormat(pattern = "dd/MM/yyyy")
+	private Date birthDate;
+
+	@JsonInclude(Include.NON_NULL)
+	private String photo;
+
+	@JsonInclude(Include.NON_NULL)
+	private String phone;
+
+	@JsonInclude(Include.NON_NULL)
+	private String ramal;
+
+	@JsonInclude(Include.NON_NULL)
+	private AccountRepresentation masterAccount;
+
+	@JsonInclude(Include.NON_NULL)
+	private String justification;
+	
+	@JsonInclude(Include.NON_NULL)
 	private String otpSecret;
+
+
+/*	@JsonInclude(Include.NON_NULL)
+	private List<AccountRepresentation> accounts;
+	
+	@JsonInclude(Include.NON_NULL)
+	private DepartmentRepresentation department;
+
+	@JsonInclude(Include.NON_NULL)
+	private OfficeRepresentation office;
+
+	@JsonInclude(Include.NON_NULL)
+	private UserTypeRepresentation type;
+	
+	@JsonInclude(Include.NON_NULL)
+	private Map<String, ClaimRepresentation> claims;
+
+	@JsonInclude(Include.NON_NULL)
+	private PositionRepresentation position;
+
+	@JsonInclude(Include.NON_NULL)
+	private OrganizationRepresentation organization;
+*/
+
 
 	public UserRepresentation() {
 	}
@@ -48,25 +104,48 @@ public class UserRepresentation extends ResourceSupport {
 	public UserRepresentation(User user, Boolean expand) {
 
 		this.identifier = user.getId();
-		this.status = user.getStatus().toString();
-		this.displayName = user.getDisplayName();
-		this.email = user.getEmail();
 		this.firstName = user.getFirstName();
-		this.lastName = user.getLastName();
 		this.middleName = user.getMiddleName();
+		this.lastName = user.getLastName();
+		this.status = user.getStatus().toString();
+		this.email = user.getEmail();
+		this.displayName = user.getDisplayName();
+		this.effectiveDate = user.getEffectiveDate();
+		this.personalEmail = user.getPersonalEmail();
+		this.birthDate = user.getBirthDate();
+		this.photo = user.getPhoto();
+		this.phone = user.getPhone();
+		this.ramal = user.getRamal();
+		this.justification = user.getJustification();
 		this.otpSecret = user.getOtpSecret();
+		
+		if(user.getMasterAccount() != null) {
+			this.masterAccount = new AccountRepresentation(user.getMasterAccount());
+		}
 	}
 
 	public static User build(UserRepresentation representation) {
 
 		User user = new User();
-		user.setDisplayName(representation.getDisplayName());
-		user.setEmail(representation.getEmail());
-		user.setFirstName(representation.getFirstName());
-		user.setLastName(representation.getLastName());
-		user.setMiddleName(representation.getMiddleName());
 		user.setId(representation.getIdentifier());
+		user.setFirstName(representation.getFirstName());
+		user.setMiddleName(representation.getMiddleName());
+		user.setLastName(representation.getLastName());
+		user.setStatus(representation.getStatus());
+		user.setEmail(representation.getEmail());
+		user.setDisplayName(representation.getDisplayName());
+		user.setEffectiveDate(representation.getEffectiveDate());
+		user.setPersonalEmail(representation.getPersonalEmail());
+		user.setBirthDate(representation.getBirthDate());
+		user.setPhoto(representation.getPhoto());
+		user.setPhone(representation.getPhone());
+		user.setRamal(representation.getRamal());
+		user.setJustification(representation.getJustification());
 		user.setOtpSecret(representation.getOtpSecret());
+		
+		if(representation.getMasterAccount() != null) {
+			user.setMasterAccount(AccountRepresentation.build(representation.getMasterAccount()));
+		}
 
 		return user;
 	}
@@ -133,6 +212,70 @@ public class UserRepresentation extends ResourceSupport {
 
 	public void setOtpSecret(String otpSecret) {
 		this.otpSecret = otpSecret;
+	}
+
+	public Date getEffectiveDate() {
+		return effectiveDate;
+	}
+
+	public void setEffectiveDate(Date effectiveDate) {
+		this.effectiveDate = effectiveDate;
+	}
+
+	public String getPersonalEmail() {
+		return personalEmail;
+	}
+
+	public void setPersonalEmail(String personalEmail) {
+		this.personalEmail = personalEmail;
+	}
+
+	public Date getBirthDate() {
+		return birthDate;
+	}
+
+	public void setBirthDate(Date birthDate) {
+		this.birthDate = birthDate;
+	}
+
+	public String getPhoto() {
+		return photo;
+	}
+
+	public void setPhoto(String photo) {
+		this.photo = photo;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	public String getRamal() {
+		return ramal;
+	}
+
+	public void setRamal(String ramal) {
+		this.ramal = ramal;
+	}
+
+	public AccountRepresentation getMasterAccount() {
+		return masterAccount;
+	}
+
+	public void setMasterAccount(AccountRepresentation masterAccount) {
+		this.masterAccount = masterAccount;
+	}
+
+	public String getJustification() {
+		return justification;
+	}
+
+	public void setJustification(String justification) {
+		this.justification = justification;
 	}
 
 }

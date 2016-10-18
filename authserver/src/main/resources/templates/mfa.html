@@ -17,10 +17,10 @@
 					Para ajudar a manter seu e-mail, fotos e outros conteúdos mais seguros, complete a tarefa abaixo.
 				</h2>
 			</div>
-			<div layout="column" layout-align="center center">
-				<h5>
-				<p style="color: red" th:text="${erro}" />
-			</h5>
+		<div layout="column" layout-align="center center">
+				<h5  th:if="${erro} != null">
+					<p style="color: red" th:text="${erro}" />
+				</h5>
         <md-card layout="column" style="width: 405px;">
           <md-card-content style="padding: 40px 40px;">
           	<form action="mfa" >

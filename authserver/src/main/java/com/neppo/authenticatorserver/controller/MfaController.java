@@ -13,6 +13,7 @@ import com.neppo.authenticatorserver.domain.AuthenticationResponse;
 import com.neppo.authenticatorserver.domain.User;
 import com.neppo.authenticatorserver.service.AuthenticationService;
 import com.neppo.authenticatorserver.service.exception.OtpInvalidTokenException;
+import com.neppo.authenticatorserver.session.Session;
 import com.neppo.authenticatorserver.session.Subject;
 
 @Controller
@@ -26,7 +27,7 @@ public class MfaController {
 			@RequestParam(value = "erro", required = false, defaultValue = "") String erro, Model model)
 			throws Exception {
 
-		AuthenticationResponse authnResponse = (AuthenticationResponse) req.getSession().getAttribute("authnResponse");
+		AuthenticationResponse authnResponse = (AuthenticationResponse) Session.getAttribute("authnResponse");
 		if(authnResponse == null) {
 			return "login";
 		}

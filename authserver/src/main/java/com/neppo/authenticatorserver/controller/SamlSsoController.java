@@ -12,10 +12,10 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
-//import org.apache.shiro.cache.Cache;
 import org.joda.time.DateTime;
 import org.opensaml.common.SAMLVersion;
 import org.opensaml.saml2.core.Assertion;
+import org.opensaml.saml2.core.AttributeStatement;
 import org.opensaml.saml2.core.AuthnContext;
 import org.opensaml.saml2.core.AuthnRequest;
 import org.opensaml.saml2.core.Response;
@@ -177,25 +177,34 @@ public class SamlSsoController extends HttpServlet {
 		String username = Subject.getLoggedUser().getUsername(); 
 		String sessionIndex = Subject.getSessionId(); 
 		
-		Response response = SamlUtils.createResponse(StatusCode.SUCCESS_URI, 
-				authnRequest.getID(), SamlUtils.ISSUER_NAME_STRING);
+		Response response = SamlUtils.createResponse(StatusCode.SUCCESS_URI, authnRequest.getID(), SamlUtils.ISSUER_NAME_STRING);
 
 		response.setDestination(authnRequest.getAssertionConsumerServiceURL());
 		response.setID(UUID.randomUUID().toString());
 		response.setVersion(SAMLVersion.VERSION_20);
 		response.setIssueInstant(new DateTime());
 
-		Assertion authnAssertion = SamlUtils.createAuthnAssertion (authnRequest, 
+		Assertion authnAssertion = SamlUtils.createAuthnAssertion (
+				authnRequest, 
 				SamlUtils.createSubject (username, null, "bearer", authnRequest), 
-				AuthnContext.PASSWORD_AUTHN_CTX,  authnRequest.getDestination(),  
+				AuthnContext.PASSWORD_AUTHN_CTX,  
+				authnRequest.getDestination(),  
 				sessionIndex);  			
 		
-		/*		AttributeStatement statement = SamlUtils.create (AttributeStatement.class, 
-				AttributeStatement.DEFAULT_ELEMENT_NAME);
-
+		AttributeStatement statment = createUserAttributes();
+		authnAssertion.getStatements().add(statment);
 		
-		User user = getIdentityService().getAccount(username);
+		response.getAssertions().add(authnAssertion);	
+		return response;
+	}
 
+
+	private AttributeStatement createUserAttributes() {
+				
+		AttributeStatement statement = SamlUtils.create (AttributeStatement.class, AttributeStatement.DEFAULT_ELEMENT_NAME);
+	
+		/*
+		User user = getIdentityService().getAccount(username);
 		SamlUtils.addAttribute(statement, "uid", username);
 		SamlUtils.addAttribute(statement, "givenName", user.getFirstName());
 		SamlUtils.addAttribute(statement, "sn", user.getSureName());
@@ -209,15 +218,11 @@ public class SamlSsoController extends HttpServlet {
 		SamlUtils.addAttribute(statement, "urn:oid:0.9.2342.19200300.100.1.3", user.getEmail());
 		SamlUtils.addAttribute(statement, "urn:oid:1.3.6.1.4.1.5923.1.1.1.6", username);
 		SamlUtils.addAttribute(statement, "urn:oid:1.3.6.1.4.1.5923.1.1.1.10", " ");
-
-		authnAssertion.getStatements().add(statement); */
-
-		response.getAssertions().add(authnAssertion);	
-
-		return response;
-
+		 */
+		
+		return statement;
+		
 	}
-
 
 	protected Response createAuthnErrorResponse(AuthnRequest authnRequest, String errorMesssage,
 			boolean authError) 
