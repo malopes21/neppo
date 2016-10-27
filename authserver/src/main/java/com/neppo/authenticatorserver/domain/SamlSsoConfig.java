@@ -1,16 +1,12 @@
 package com.neppo.authenticatorserver.domain;
 
-import org.springframework.hateoas.ResourceSupport;
-
-public class SamlSsoConfig extends ResourceSupport {
+public class SamlSsoConfig {
 
 	private String issuer;
 
 	private String assertionConsumerServiceURL;
 
 	private String destination;
-
-	//private Application application;
 
 	public SamlSsoConfig() {
 		super();
@@ -39,14 +35,6 @@ public class SamlSsoConfig extends ResourceSupport {
 	public void setDestination(String destination) {
 		this.destination = destination;
 	}
-
-/*	public Application getApplication() {
-		return application;
-	}
-
-	public void setApplication(Application application) {
-		this.application = application;
-	}*/
 
 	@Override
 	public int hashCode() {

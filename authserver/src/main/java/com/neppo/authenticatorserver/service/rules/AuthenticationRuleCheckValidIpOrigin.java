@@ -24,7 +24,6 @@ public class AuthenticationRuleCheckValidIpOrigin extends AbstractAuthentication
 		String mask = (String) getRule().getParams().get("mask");
 		String network = (String) getRule().getParams().get("network");
 		
-		//TODO: loggar e ver adiante
 		if(isIpv6(ipOrigin)) {
 			getRule().setValidated(true);
 			return;

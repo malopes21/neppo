@@ -75,7 +75,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.neppo.authenticatorserver.saml.SamlIssuerInfo;
-//import br.com.cocreation.identity.server.util.ConfigContext;
 
 /**
  * @author bhlangonijr
@@ -94,7 +93,7 @@ public class SamlUtils {
 	public static final String RELAY_STATE = "RelayState";
 
 	public static final String SAML_SSO_CONFIG = "samlSsoConfig";
-	public static final String ISSUER_NAME_STRING = "http://localhost:8082/authserver/sso"; 		//colocar em properties		//"Coreo";
+	public static final String ISSUER_NAME_STRING = "http://localhost:8082/authserver/sso";
 	public static final String ISSUER_FORMAT_STRING = "urn:oasis:names:tc:SAML:2.0:nameid-format:entity";
 	public static final String NAME_ID_UNSPECIFIED = "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified";
 	public static final String ATTRIBUTE_URI_FORMAT = "urn:oasis:names:tc:SAML:2.0:attrname-format:uri";

@@ -45,8 +45,6 @@ public class SamlSsoController extends HttpServlet {
 	@Autowired
 	protected AuthenticationService authenticationService;
 	
-	//protected Cache<String, String> cache;
-	
 	@Autowired
 	protected LoginSessionManager sessionManager;
 
@@ -73,7 +71,7 @@ public class SamlSsoController extends HttpServlet {
 			
 			SamlRequest.validate(authnRequest, authenticationService);
 			
-		} catch (Exception e) { //CATEGORIZAR TODOS OS ERROS
+		} catch (Exception e) { 
 			e.printStackTrace();
 			String redirect = errorRedirectUrl + "?erro="+e.getMessage();
 			resp.sendRedirect("./" + redirect);
@@ -148,7 +146,7 @@ public class SamlSsoController extends HttpServlet {
 		String encodedResponse = null;
 		Document doc = SamlUtils.asDOMDocument(response);
 		
-		//getSignature().signSAMLObject(doc.getDocumentElement());  //malopes
+		//getSignature().signSAMLObject(doc.getDocumentElement());  
 
 		String xml = SamlUtils.marshall(
 				doc.getDocumentElement(),false);
@@ -221,9 +219,9 @@ public class SamlSsoController extends HttpServlet {
 		 */
 		
 		return statement;
-		
 	}
 
+	
 	protected Response createAuthnErrorResponse(AuthnRequest authnRequest, String errorMesssage,
 			boolean authError) 
 					throws IOException, MarshallingException, TransformerException, DaoException {
@@ -240,7 +238,6 @@ public class SamlSsoController extends HttpServlet {
 
 		return response;
 	}
-
 
 
 	protected void sendToErrorPage(HttpServletResponse resp,

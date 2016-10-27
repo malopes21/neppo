@@ -20,8 +20,6 @@ public class AuthenticationResponse {
 
 	private String errorMessage;
 
-	// refactoring
-
 	private boolean accountExist;
 
 	private boolean accountValidated;

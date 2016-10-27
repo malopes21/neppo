@@ -22,6 +22,9 @@ public class SamlRequest {
 		
 		SamlSsoConfig samlConfig = authenticationService.findSamlConfig(authnRequest.getIssuer().getValue());
 		
+		if(samlConfig == null) 
+			throw new RuntimeException("Saml Config not found!");
+		
 		if(!authnRequest.getIssuer().getValue().equals(samlConfig.getIssuer()))
 			throw new RuntimeException("Invalid Issuer.");
 		

@@ -34,13 +34,11 @@ public class LoginSessionManager {
 	public void addUserSession(String username, LoginSession s) {
 
 		getSessions(username).add(s);
-
 	}
 
 	public void removeUserSession(String username, LoginSession s) {
 
 		getSessions(username).remove(s);
-
 	}
 
 	public void removeAllUserSessions(String username) {

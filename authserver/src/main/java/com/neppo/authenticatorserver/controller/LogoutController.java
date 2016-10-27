@@ -35,7 +35,6 @@ public class LogoutController {
 			@RequestParam(value = "erro", required = false, defaultValue = "") String erro, Model model)
 			throws Exception {
 
-
 		return "ok";
 	}
 	

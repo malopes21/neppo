@@ -34,6 +34,7 @@ import com.neppo.authenticatorserver.domain.exception.DaoException;
 import com.neppo.authenticatorserver.domain.representation.AuthenticationRequestRepresentation;
 import com.neppo.authenticatorserver.domain.representation.AuthenticationResponseRepresentation;
 import com.neppo.authenticatorserver.domain.representation.AuthenticationRuleRepresentation;
+import com.neppo.authenticatorserver.domain.representation.SamlSsoConfigRepresentation;
 import com.neppo.authenticatorserver.domain.representation.exception.AuthenticationRuleParameterException;
 import com.neppo.authenticatorserver.mfa.otp.OTPProvider;
 import com.neppo.authenticatorserver.service.exception.AccountStatusNotValidException;
@@ -329,8 +330,10 @@ public class AuthenticationService {
 			
 			String sResponse = EntityUtils.toString(response.getEntity());
 			ObjectMapper mapper = new ObjectMapper();
-			SamlSsoConfig obj = mapper.readValue(sResponse, SamlSsoConfig.class);
-			return obj;
+			SamlSsoConfigRepresentation representation = mapper.readValue(sResponse, SamlSsoConfigRepresentation.class);
+			SamlSsoConfig config = SamlSsoConfigRepresentation.build(representation);
+			return config;
+			
 		}catch(Exception ex) {
 			
 			ex.printStackTrace();
@@ -428,7 +431,6 @@ public class AuthenticationService {
 	}
 
 	
-	
 	/**
 	 * 
 	 * MfaController helper methods
@@ -480,10 +482,12 @@ public class AuthenticationService {
 		
 		HttpResponse response = null;
 		try {
+			
 			List<NameValuePair> headers = createHttpHeaders();
 			String urlDest = BASE_URL_SERVICE + "/mfaotp/validate";
 			String content = "{\"token\": \""+token+"\", \"user\": { \"identifier\": "+userId+"} }";
 			response = HttpClientUtils.sendPost(urlDest, headers, content);
+			
 			return EntityUtils.toString(response.getEntity()); 
 		
 		}catch(Exception ex){
@@ -494,13 +498,6 @@ public class AuthenticationService {
 	
 	
 	public User createUser(AuthenticationResponse authnResponse) {
-		
-		/*User user = new User();
-		user.setUsername(authnResponse.getAccount().getUsername());
-		user.setEmail(authnResponse.getAccount().getDescription());
-		user.setFirstName(authnResponse.getAccount().getName());
-		user.setName(authnResponse.getAccount().getName());
-		return user;*/
 		
 		return authnResponse.getAccount().getUser();
 	}

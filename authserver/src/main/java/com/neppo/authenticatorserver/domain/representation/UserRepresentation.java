@@ -1,11 +1,9 @@
 package com.neppo.authenticatorserver.domain.representation;
 
 import java.util.Date;
-import java.util.List;
 
 import org.springframework.hateoas.ResourceSupport;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -38,14 +36,12 @@ public class UserRepresentation extends ResourceSupport {
 	private String displayName;
 
 	@JsonInclude(Include.NON_NULL)
-	//@JsonFormat(pattern = "dd/MM/yyyy")
 	private Date effectiveDate;
 
 	@JsonInclude(Include.NON_NULL)
 	private String personalEmail;
 
 	@JsonInclude(Include.NON_NULL)
-	//@JsonFormat(pattern = "dd/MM/yyyy")
 	private Date birthDate;
 
 	@JsonInclude(Include.NON_NULL)
@@ -65,30 +61,6 @@ public class UserRepresentation extends ResourceSupport {
 	
 	@JsonInclude(Include.NON_NULL)
 	private String otpSecret;
-
-
-/*	@JsonInclude(Include.NON_NULL)
-	private List<AccountRepresentation> accounts;
-	
-	@JsonInclude(Include.NON_NULL)
-	private DepartmentRepresentation department;
-
-	@JsonInclude(Include.NON_NULL)
-	private OfficeRepresentation office;
-
-	@JsonInclude(Include.NON_NULL)
-	private UserTypeRepresentation type;
-	
-	@JsonInclude(Include.NON_NULL)
-	private Map<String, ClaimRepresentation> claims;
-
-	@JsonInclude(Include.NON_NULL)
-	private PositionRepresentation position;
-
-	@JsonInclude(Include.NON_NULL)
-	private OrganizationRepresentation organization;
-*/
-
 
 	public UserRepresentation() {
 	}

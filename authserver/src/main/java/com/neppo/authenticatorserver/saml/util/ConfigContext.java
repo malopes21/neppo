@@ -23,6 +23,7 @@ import com.neppo.authenticatorserver.saml.SamlIssuerInfoRecord;
  *
  */
 public class ConfigContext {
+	
 	private static final Logger log = Logger.getLogger(ConfigContext.class);
 	private static final ConfigContext instance = new ConfigContext();
 	private JAXBContext jaxbContext;
